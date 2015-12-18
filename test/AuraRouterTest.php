@@ -122,7 +122,7 @@ class AuraRouterTest extends TestCase
         $router->addRoute($route);
         $router->generateUri('foo');
     }
-	
+
     public function testCanSpecifyAuraRouteWildcardViaRouteOptions()
     {
         $route = new Route('/foo', 'foo', ['GET']);
