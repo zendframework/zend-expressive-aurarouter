@@ -9,11 +9,8 @@
 
 namespace Zend\Expressive\Router;
 
-use Aura\Router\Generator;
 use Aura\Router\Route as AuraRoute;
-use Aura\Router\RouteCollection;
-use Aura\Router\RouteFactory;
-use Aura\Router\Router;
+use Aura\Router\RouterContainer as Router;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
 /**
@@ -83,12 +80,7 @@ class AuraRouter implements RouterInterface
         // Must inject routes prior to matching.
         $this->injectRoutes();
 
-        $path   = $request->getUri()->getPath();
-        $method = $request->getMethod();
-        $params = $request->getServerParams();
-
-        $params['REQUEST_METHOD'] = $method;
-        $route  = $this->router->match($path, $params);
+        $route = $this->router->getMatcher()->match($request);
 
         if (false === $route) {
             return $this->marshalFailedRoute($request);
@@ -104,7 +96,8 @@ class AuraRouter implements RouterInterface
     {
         // Must inject routes prior to generating URIs.
         $this->injectRoutes();
-        return $this->router->generateRaw($name, $substitutions);
+
+        return $this->router->getGenerator()->generateRaw($name, $substitutions);
     }
 
     /**
@@ -114,10 +107,7 @@ class AuraRouter implements RouterInterface
      */
     private function createRouter()
     {
-        return new Router(
-            new RouteCollection(new RouteFactory()),
-            new Generator()
-        );
+        return new Router();
     }
 
     /**
@@ -127,27 +117,26 @@ class AuraRouter implements RouterInterface
      * methods when creating the result.
      *
      * @param Request $request
+     *
      * @return RouteResult
      */
     private function marshalFailedRoute(Request $request)
     {
-        $failedRoute = $this->router->getFailedRoute();
+        $failedRoute = $this->router->getMatcher()->getFailedRoute();
 
         // Evidently, getFailedRoute() can sometimes return null; these are 404 conditions.
         if (null === $failedRoute) {
             return RouteResult::fromRouteFailure();
         }
 
-        if ($failedRoute->failedMethod()) {
+        if ($failedRoute->failedRule) {
             return RouteResult::fromRouteFailure($failedRoute->method);
         }
 
         // Check to see if the route regex matched; if so, and we have an entry
         // for the path, register a 405.
         list($path) = explode('^', $failedRoute->name);
-        if (isset($failedRoute->failed)
-            && $failedRoute->failed !== AuraRoute::FAILED_REGEX
-            && array_key_exists($path, $this->routes)
+        if (array_key_exists($path, $this->routes)
         ) {
             return RouteResult::fromRouteFailure($this->routes[$path]);
         }
@@ -163,6 +152,7 @@ class AuraRouter implements RouterInterface
      * assume an object at this point.
      *
      * @param AuraRoute $route
+     *
      * @return RouteResult
      */
     private function marshalMatchedRoute($route)
@@ -192,32 +182,32 @@ class AuraRouter implements RouterInterface
      */
     private function injectRoute(Route $route)
     {
-        $path      = $route->getPath();
-        $auraRoute = $this->router->add(
-            $route->getName(),
-            $path,
-            $route->getMiddleware()
-        );
+        $path = $route->getPath();
+
+        $auraRoute = new AuraRoute();
+        $auraRoute->name($route->getName());
+        $auraRoute->path($path);
+        $auraRoute->handler($route->getMiddleware());
 
         foreach ($route->getOptions() as $key => $value) {
             switch ($key) {
                 case 'tokens':
-                    $auraRoute->addTokens($value);
+                    $auraRoute->tokens($value);
                     break;
                 case 'values':
-                    $auraRoute->addValues($value);
+                    $auraRoute->defaults($value);
                     break;
             }
         }
 
+        $this->router->getMap()->addRoute($auraRoute);
+
         $allowedMethods = $route->getAllowedMethods();
-        if (Route::HTTP_METHOD_ANY === $allowedMethods) {
+        if (Route::HTTP_METHOD_ANY !== $allowedMethods) {
             return;
         }
 
-        $auraRoute->setServer([
-            'REQUEST_METHOD' => implode('|', $allowedMethods)
-        ]);
+        $auraRoute->allows($allowedMethods);
 
         if (array_key_exists($path, $this->routes)) {
             $allowedMethods = array_merge($this->routes[$path], $allowedMethods);
