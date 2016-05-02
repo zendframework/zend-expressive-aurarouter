@@ -129,8 +129,10 @@ class AuraRouter implements RouterInterface
             return RouteResult::fromRouteFailure();
         }
 
-        if ($failedRoute->failedRule) {
-            return RouteResult::fromRouteFailure($failedRoute->method);
+        if ($failedRoute->allows
+            && !in_array($request->getMethod(), $failedRoute->allows)
+        ) {
+            return RouteResult::fromRouteFailure($failedRoute->allows);
         }
 
         // Check to see if the route regex matched; if so, and we have an entry

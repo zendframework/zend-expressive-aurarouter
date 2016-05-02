@@ -195,7 +195,7 @@ class AuraRouterTest extends TestCase
         ], $result->getMatchedParams());
     }
 
-    public function ___testMatchFailureDueToHttpMethodReturnsRouteResultWithAllowedMethods()
+    public function testMatchFailureDueToHttpMethodReturnsRouteResultWithAllowedMethods()
     {
         $route = new Route('/foo', 'foo', ['POST']);
 
@@ -207,12 +207,12 @@ class AuraRouterTest extends TestCase
         $request->getMethod()->willReturn('GET');
         $request->getServerParams()->willReturn([]);
 
-        $this->auraRouter->match('/foo', ['REQUEST_METHOD' => 'GET'])->willReturn(false);
+        $this->auraMatcher->match($request)->willReturn(false);
 
-        $auraRoute = new TestAsset\AuraRoute;
-        $auraRoute->method = ['POST'];
+        $auraRoute = new AuraRoute();
+        $auraRoute->allows(['POST']);
 
-        $this->auraRouter->getFailedRoute()->willReturn($auraRoute);
+        $this->auraMatcher->getFailedRoute()->willReturn($auraRoute);
 
         $router = $this->getRouter();
         $result = $router->match($request->reveal());
@@ -221,7 +221,7 @@ class AuraRouterTest extends TestCase
         $this->assertSame(['POST'], $result->getAllowedMethods());
     }
 
-    public function ___testMatchFailureNotDueToHttpMethodReturnsGenericRouteFailureResult()
+    public function testMatchFailureNotDueToHttpMethodReturnsGenericRouteFailureResult()
     {
         $route = new Route('/foo', 'foo', ['GET']);
 
@@ -233,8 +233,11 @@ class AuraRouterTest extends TestCase
         $request->getMethod()->willReturn('PUT');
         $request->getServerParams()->willReturn([]);
 
-        $this->auraRouter->match('/bar', ['REQUEST_METHOD' => 'PUT'])->willReturn(false);
-        $this->auraRouter->getFailedRoute()->willReturn(new TestAsset\AuraRoute);
+        $this->auraMatcher->match($request)->willReturn(false);
+
+        $auraRoute = new AuraRoute();
+
+        $this->auraMatcher->getFailedRoute()->willReturn($auraRoute);
 
         $router = $this->getRouter();
         $result = $router->match($request->reveal());
