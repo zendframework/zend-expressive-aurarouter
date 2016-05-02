@@ -207,6 +207,7 @@ class AuraRouter implements RouterInterface
         if (Route::HTTP_METHOD_ANY === $allowedMethods) {
             // Add route here for improved testability
             $this->router->getMap()->addRoute($auraRoute);
+
             return;
         }
 

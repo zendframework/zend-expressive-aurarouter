@@ -41,10 +41,10 @@ class AuraRouterTest extends TestCase
     public function setUp()
     {
         $this->auraRouterContainer = $this->prophesize(AuraRouterContainer::class);
-        $this->auraRoute = $this->prophesize(AuraRoute::class);
-        $this->auraMap = $this->prophesize(AuraMap::class);
-        $this->auraMatcher = $this->prophesize(AuraMatcher::class);
-        $this->auraGenerator = $this->prophesize(AuraGenerator::class);
+        $this->auraRoute           = $this->prophesize(AuraRoute::class);
+        $this->auraMap             = $this->prophesize(AuraMap::class);
+        $this->auraMatcher         = $this->prophesize(AuraMatcher::class);
+        $this->auraGenerator       = $this->prophesize(AuraGenerator::class);
 
         $this->auraRouterContainer->getMap()->willReturn($this->auraMap->reveal());
         $this->auraRouterContainer->getMatcher()->willReturn($this->auraMatcher->reveal());
@@ -58,7 +58,7 @@ class AuraRouterTest extends TestCase
 
     public function testAddingRouteAggregatesRoute()
     {
-        $route = new Route('/foo', 'foo', ['GET']);
+        $route  = new Route('/foo', 'foo', ['GET']);
         $router = $this->getRouter();
         $router->addRoute($route);
         $this->assertAttributeContains($route, 'routesToInject', $router);
@@ -71,7 +71,7 @@ class AuraRouterTest extends TestCase
      */
     public function testMatchingInjectsRouteIntoAuraRouter()
     {
-        $route = new Route('/foo', 'foo', ['GET']);
+        $route  = new Route('/foo', 'foo', ['GET']);
         $router = $this->getRouter();
         $router->addRoute($route);
 
@@ -103,7 +103,7 @@ class AuraRouterTest extends TestCase
      */
     public function testUriGenerationInjectsRouteIntoAuraRouter()
     {
-        $route = new Route('/foo', 'foo', ['GET']);
+        $route  = new Route('/foo', 'foo', ['GET']);
         $router = $this->getRouter();
         $router->addRoute($route);
 
@@ -301,7 +301,7 @@ class AuraRouterTest extends TestCase
     public function testGeneratedUriIsNotEncoded()
     {
         $router = new AuraRouter();
-        $route = new Route('/foo/{id}', 'foo', ['GET'], 'foo');
+        $route  = new Route('/foo/{id}', 'foo', ['GET'], 'foo');
 
         $router->addRoute($route);
 
