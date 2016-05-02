@@ -159,8 +159,8 @@ class AuraRouter implements RouterInterface
     {
         return RouteResult::fromRouteMatch(
             $route->name,
-            $route->params['action'],
-            $route->params
+            $route->attributes['action'],
+            $route->attributes
         );
     }
 
