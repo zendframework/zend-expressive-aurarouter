@@ -184,6 +184,7 @@ class AuraRouter implements RouterInterface
     {
         $path = $route->getPath();
 
+        // Convert Route to AuraRoute
         $auraRoute = new AuraRoute();
         $auraRoute->name($route->getName());
         $auraRoute->path($path);
@@ -200,14 +201,16 @@ class AuraRouter implements RouterInterface
             }
         }
 
-        $this->router->getMap()->addRoute($auraRoute);
-
         $allowedMethods = $route->getAllowedMethods();
-        if (Route::HTTP_METHOD_ANY !== $allowedMethods) {
+        if (Route::HTTP_METHOD_ANY === $allowedMethods) {
+            // Add route here for improved testability
+            $this->router->getMap()->addRoute($auraRoute);
             return;
         }
 
         $auraRoute->allows($allowedMethods);
+        // Add route here for improved testability
+        $this->router->getMap()->addRoute($auraRoute);
 
         if (array_key_exists($path, $this->routes)) {
             $allowedMethods = array_merge($this->routes[$path], $allowedMethods);

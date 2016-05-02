@@ -79,6 +79,7 @@ class AuraRouterTest extends TestCase
         $auraRoute->name($route->getName());
         $auraRoute->path($route->getPath());
         $auraRoute->handler($route->getMiddleware());
+        $auraRoute->allows($route->getAllowedMethods());
 
         $uri = $this->prophesize(UriInterface::class);
         $uri->getPath()->willReturn('/foo');
@@ -90,7 +91,6 @@ class AuraRouterTest extends TestCase
         $request->getMethod()->willReturn('GET');
         $request->getServerParams()->willReturn([]);
 
-        //$this->auraRoute->allows(['GET'])->shouldBeCalled();
         $this->auraMap->addRoute($auraRoute)->shouldBeCalled();
         $this->auraMatcher->match($request)->willReturn(false);
         $this->auraMatcher->getFailedRoute()->willReturn(null);
@@ -111,8 +111,8 @@ class AuraRouterTest extends TestCase
         $auraRoute->name($route->getName());
         $auraRoute->path($route->getPath());
         $auraRoute->handler($route->getMiddleware());
+        $auraRoute->allows($route->getAllowedMethods());
 
-        //$this->auraRoute->allows(['GET'])->shouldBeCalled();
         $this->auraMap->addRoute($auraRoute)->shouldBeCalled();
         $this->auraGenerator->generateRaw('foo', [])->shouldBeCalled()->willReturn('/foo');
 
@@ -128,10 +128,8 @@ class AuraRouterTest extends TestCase
         $auraRoute->name('/foo^GET');
         $auraRoute->path('/foo');
         $auraRoute->handler($route->getMiddleware());
+        $auraRoute->allows($route->getAllowedMethods());
         $auraRoute->tokens($route->getOptions()['tokens']);
-
-        //$this->auraRoute->allows(['GET'])->shouldBeCalled();
-        //$this->auraRoute->tokens($route->getOptions()['tokens'])->shouldBeCalled();
 
         $this->auraMap->addRoute($auraRoute)->shouldBeCalled();
         // Injection happens when match() or generateUri() are called
@@ -151,10 +149,8 @@ class AuraRouterTest extends TestCase
         $auraRoute->name($route->getName());
         $auraRoute->path($route->getPath());
         $auraRoute->handler($route->getMiddleware());
+        $auraRoute->allows($route->getAllowedMethods());
         $auraRoute->defaults($route->getOptions()['values']);
-
-        //$this->auraRoute->allows(['GET'])->shouldBeCalled();
-        //$this->auraRoute->addValues($route->getOptions()['values'])->shouldBeCalled();
 
         $this->auraMap->addRoute($auraRoute)->shouldBeCalled();
         // Injection happens when match() or generateUri() are called
