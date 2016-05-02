@@ -272,7 +272,7 @@ class AuraRouterTest extends TestCase
     /**
      * @group 85
      */
-    public function ___testReturns404ResultIfAuraReturnsNullForFailedRoute()
+    public function testReturns404ResultIfAuraReturnsNullForFailedRoute()
     {
         $route = new Route('/foo', 'foo', ['GET']);
 
@@ -284,8 +284,8 @@ class AuraRouterTest extends TestCase
         $request->getMethod()->willReturn('PUT');
         $request->getServerParams()->willReturn([]);
 
-        $this->auraRouter->match('/bar', ['REQUEST_METHOD' => 'PUT'])->willReturn(false);
-        $this->auraRouter->getFailedRoute()->willReturn(null);
+        $this->auraMatcher->match($request)->willReturn(false);
+        $this->auraMatcher->getFailedRoute()->willReturn(null);
 
         $router = $this->getRouter();
         $result = $router->match($request->reveal());
