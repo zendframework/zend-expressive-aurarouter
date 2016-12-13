@@ -10,6 +10,7 @@
 namespace ZendTest\Expressive\Router;
 
 use PHPUnit_Framework_TestCase as TestCase;
+use Prophecy\Argument;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UriInterface;
 use Zend\Expressive\Router\AuraRouter;
@@ -47,9 +48,15 @@ class AuraRouterTest extends TestCase
         $router = $this->getRouter();
         $router->addRoute($route);
 
-        $this->auraRoute->setServer([
-            'REQUEST_METHOD' => 'GET',
-        ])->shouldBeCalled();
+        $this->auraRoute
+            ->setServer(Argument::that(function ($server) {
+                if (! isset($server['REQUEST_METHOD'])) {
+                    return false;
+                }
+
+                return (bool) preg_match('/\bGET\b/', $server['REQUEST_METHOD']);
+            }))
+            ->shouldBeCalled();
         $this->auraRouter->add('/foo^GET', '/foo', 'foo')->willReturn($this->auraRoute->reveal());
         $this->auraRouter->match('/foo', ['REQUEST_METHOD' => 'GET'])->willReturn(false);
         $this->auraRouter->getFailedRoute()->willReturn(null);
@@ -76,9 +83,15 @@ class AuraRouterTest extends TestCase
         $router = $this->getRouter();
         $router->addRoute($route);
 
-        $this->auraRoute->setServer([
-            'REQUEST_METHOD' => 'GET',
-        ])->shouldBeCalled();
+        $this->auraRoute
+            ->setServer(Argument::that(function ($server) {
+                if (! isset($server['REQUEST_METHOD'])) {
+                    return false;
+                }
+
+                return (bool) preg_match('/\bGET\b/', $server['REQUEST_METHOD']);
+            }))
+            ->shouldBeCalled();
         $this->auraRouter->add('/foo^GET', '/foo', 'foo')->willReturn($this->auraRoute->reveal());
         $this->auraRouter->generateRaw('foo', [])->willReturn('/foo');
 
@@ -90,9 +103,15 @@ class AuraRouterTest extends TestCase
         $route = new Route('/foo', 'foo', ['GET']);
         $route->setOptions(['tokens' => ['foo' => 'bar']]);
 
-        $this->auraRoute->setServer([
-            'REQUEST_METHOD' => 'GET',
-        ])->shouldBeCalled();
+        $this->auraRoute
+            ->setServer(Argument::that(function ($server) {
+                if (! isset($server['REQUEST_METHOD'])) {
+                    return false;
+                }
+
+                return (bool) preg_match('/\bGET\b/', $server['REQUEST_METHOD']);
+            }))
+            ->shouldBeCalled();
         $this->auraRoute->addTokens($route->getOptions()['tokens'])->shouldBeCalled();
         // Injection happens when match() or generateUri() are called
         $this->auraRouter->generateRaw('foo', [])->willReturn('/foo');
@@ -109,9 +128,15 @@ class AuraRouterTest extends TestCase
         $route = new Route('/foo', 'foo', ['GET']);
         $route->setOptions(['values' => ['foo' => 'bar']]);
 
-        $this->auraRoute->setServer([
-            'REQUEST_METHOD' => 'GET',
-        ])->shouldBeCalled();
+        $this->auraRoute
+            ->setServer(Argument::that(function ($server) {
+                if (! isset($server['REQUEST_METHOD'])) {
+                    return false;
+                }
+
+                return (bool) preg_match('/\bGET\b/', $server['REQUEST_METHOD']);
+            }))
+            ->shouldBeCalled();
         $this->auraRoute->addValues($route->getOptions()['values'])->shouldBeCalled();
 
         $this->auraRouter->add('/foo^GET', '/foo', 'foo')->willReturn($this->auraRoute->reveal());
