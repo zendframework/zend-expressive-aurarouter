@@ -15,5 +15,4 @@ $ composer require zendframework/zend-expressive-aurarouter
 
 ## Documentation
 
-See the [zend-expressive](https://github.com/zendframework/zend-expressive/blob/master/doc/book)
-documentation tree, or browse online at http://zend-expressive.rtfd.org.
+See the Expressive [Aura.Router documentation](https://docs.zendframework.com/zend-expressive/features/router/aura/).
