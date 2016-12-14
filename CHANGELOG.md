@@ -20,7 +20,7 @@ All notable changes to this project will be documented in this file, in reverse 
 
 - Nothing.
 
-## 1.1.1 - TBD
+## 1.1.1 - 2016-12-14
 
 ### Added
 
@@ -36,7 +36,16 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Fixed
 
-- Nothing.
+- [#17](https://github.com/zendframework/zend-expressive-aurarouter/pull/17)
+  fixes how the router reports a failure when a root path matches a portion of
+  the request path. With the upgrade to Aura.Router v3, these were incorrectly
+  being reported as 405 errors instead of 404; they are not reported correctly.
+
+- [#17](https://github.com/zendframework/zend-expressive-aurarouter/pull/17)
+  fixes how the router returns allowed methods when a 405 occurs; previously, it
+  would return the allowed methods from the first route matching the path; it
+  now returns the aggregated set of methods supported from all routes with the
+  same path.
 
 ## 1.1.0 - 2016-12-14
 
