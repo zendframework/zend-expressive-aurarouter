@@ -15,6 +15,12 @@ All notable changes to this project will be documented in this file, in reverse 
       ->setOptions(['wildcard' => 'captured']); // captures to "captured" param
   ```
 
+### Changed
+
+- [#11](https://github.com/zendframework/zend-expressive-aurarouter/pull/11)
+  updates the component to use the Aura.Router version 3 series instead of the
+  version 2 series. The exposed API remains the same.
+
 ### Deprecated
 
 - Nothing.
