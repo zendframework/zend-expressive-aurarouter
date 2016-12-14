@@ -11,6 +11,7 @@ namespace Zend\Expressive\Router;
 
 use Aura\Router\Route as AuraRoute;
 use Aura\Router\RouterContainer as Router;
+use Fig\Http\Message\RequestMethodInterface as RequestMethod;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
 /**
@@ -27,6 +28,14 @@ use Psr\Http\Message\ServerRequestInterface as Request;
  */
 class AuraRouter implements RouterInterface
 {
+    /**
+     * Implicit HTTP methods (should work for any route)
+     */
+    const HTTP_METHODS_IMPLICIT = [
+        RequestMethod::METHOD_HEAD,
+        RequestMethod::METHOD_OPTIONS,
+    ];
+
     /**
      * Map paths to allowed HTTP methods.
      *
@@ -132,6 +141,13 @@ class AuraRouter implements RouterInterface
             return RouteResult::fromRouteFailure();
         }
 
+        // Allow HEAD and OPTIONS requests if the failed route matches the path
+        if (in_array($request->getMethod(), self::HTTP_METHODS_IMPLICIT, true)
+            && $failedRoute->allows
+        ) {
+            return $this->marshalMatchedRoute($failedRoute, $request->getMethod());
+        }
+
         if ($failedRoute->allows
             && ! in_array($request->getMethod(), $failedRoute->allows)
         ) {
@@ -141,8 +157,7 @@ class AuraRouter implements RouterInterface
         // Check to see if the route regex matched; if so, and we have an entry
         // for the path, register a 405.
         list($path) = explode('^', $failedRoute->name);
-        if (array_key_exists($path, $this->pathMethodMap)
-        ) {
+        if (array_key_exists($path, $this->pathMethodMap)) {
             return RouteResult::fromRouteFailure($this->pathMethodMap[$path]);
         }
 
@@ -233,19 +248,17 @@ class AuraRouter implements RouterInterface
 
         $allowedMethods = $route->getAllowedMethods();
         if (Route::HTTP_METHOD_ANY === $allowedMethods) {
-            // Add route here for improved testability
+            // Matches any method; no special handling required
             $this->router->getMap()->addRoute($auraRoute);
-
             return;
         }
 
+        // Inject allowed methods, and map them for 405 detection
         $auraRoute->allows($allowedMethods);
-        // Add route here for improved testability
         $this->router->getMap()->addRoute($auraRoute);
 
-        if (array_key_exists($path, $this->pathMethodMap)) {
-            $allowedMethods = array_merge($this->pathMethodMap[$path], $allowedMethods);
-        }
-        $this->pathMethodMap[$path] = $allowedMethods;
+        $this->pathMethodMap[$path] = array_key_exists($path, $this->pathMethodMap)
+            ? array_merge($this->pathMethodMap[$path], $allowedMethods)
+            : $allowedMethods;
     }
 }
