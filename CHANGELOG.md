@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 1.1.0 - TBD
+## 1.1.0 - 2016-12-14
 
 ### Added
 
@@ -30,24 +30,6 @@ All notable changes to this project will be documented in this file, in reverse 
   matches. Dispatchers will need to check the `Route` composed in the
   `RouteResult` to determine if matches against these methods were explicit or
   implicit (using `Route::implicitHead()` and `Route::implicitOptions()`).
-
-### Deprecated
-
-- Nothing.
-
-### Removed
-
-- Nothing.
-
-### Fixed
-
-- Nothing.
-
-## 1.0.1 - TBD
-
-### Added
-
-- Nothing.
 
 ### Deprecated
 
