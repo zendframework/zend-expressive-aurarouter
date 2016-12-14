@@ -32,4 +32,5 @@ script:
   - if [[ $CS_CHECK == 'true' ]]; then composer license-check ; fi
 
 notifications:
-  email: true
+  irc: "irc.freenode.org#zftalk.dev"
+  email: false
