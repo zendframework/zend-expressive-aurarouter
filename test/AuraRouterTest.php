@@ -347,15 +347,7 @@ class AuraRouterTest extends TestCase
         $request->getMethod()->willReturn(RequestMethod::METHOD_GET);
         $request->getServerParams()->willReturn([]);
 
-        $auraRoute = new AuraRoute();
-        $auraRoute->name('/foo');
-        $auraRoute->path('/foo');
-        $auraRoute->handler('foo');
-        $auraRoute->allows([RequestMethod::METHOD_GET]);
-
-        $this->auraMatcher->match($request)->willReturn($auraRoute);
-
-        $router = $this->getRouter();
+        $router = new AuraRouter();
         $router->addRoute($route);
 
         $result = $router->match($request->reveal());

@@ -178,23 +178,11 @@ class AuraRouter implements RouterInterface
             }
 
             // We store the route name already, so we can match on that
-            // as long it is non-empty.
-            if (! empty($auraRoute->name)
-                && $auraRoute->name === $route->getName()
-            ) {
+            if ($auraRoute->name === $route->getName()) {
                 return $route;
             }
 
-            // Otherwise, we need to look at the path and HTTP method
-            if ($auraRoute->path !== $route->getPath()) {
-                return $matched;
-            }
-
-            if (! $route->allowsMethod($method)) {
-                return $matched;
-            }
-
-            return $route;
+            return false;
         }, false);
 
         if (! $route) {
