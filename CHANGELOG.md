@@ -6,7 +6,14 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Added
 
-- Nothing.
+- [#7](https://github.com/zendframework/zend-expressive-aurarouter/pull/7) adds
+  support for specifying wildcard segments via the `wildcard` option passed to a
+  route:
+
+  ```php
+  $app->get('/foo', $middleware, 'foo')
+      ->setOptions(['wildcard' => 'captured']); // captures to "captured" param
+  ```
 
 ### Deprecated
 

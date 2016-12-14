@@ -207,6 +207,9 @@ class AuraRouter implements RouterInterface
                 case 'values':
                     $auraRoute->addValues($value);
                     break;
+                case 'wildcard':
+                    $auraRoute->setWildcard($value);
+                    break;
             }
         }
 
