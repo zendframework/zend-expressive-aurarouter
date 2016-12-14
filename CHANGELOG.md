@@ -2,6 +2,47 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 1.1.0 - TBD
+
+### Added
+
+- [#7](https://github.com/zendframework/zend-expressive-aurarouter/pull/7) adds
+  support for specifying wildcard segments via the `wildcard` option passed to a
+  route:
+
+  ```php
+  $app->get('/foo', $middleware, 'foo')
+      ->setOptions(['wildcard' => 'captured']); // captures to "captured" param
+  ```
+
+### Changed
+
+- [#11](https://github.com/zendframework/zend-expressive-aurarouter/pull/11)
+  updates the component to use the Aura.Router version 3 series instead of the
+  version 2 series. The exposed API remains the same.
+
+- [#15](https://github.com/zendframework/zend-expressive-aurarouter/pull/15)
+  updates the router to populate the returned `RouteResult` with the associated
+  `Zend\Expressive\Router\Route` instance on a successful route match.
+
+- [#15](https://github.com/zendframework/zend-expressive-aurarouter/pull/15)
+  updates the router to always honor `HEAD` and `OPTIONS` requests when a path
+  matches. Dispatchers will need to check the `Route` composed in the
+  `RouteResult` to determine if matches against these methods were explicit or
+  implicit (using `Route::implicitHead()` and `Route::implicitOptions()`).
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- Nothing.
+
 ## 1.0.1 - TBD
 
 ### Added

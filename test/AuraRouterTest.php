@@ -9,6 +9,12 @@
 
 namespace ZendTest\Expressive\Router;
 
+use Aura\Router\Generator as AuraGenerator;
+use Aura\Router\Map as AuraMap;
+use Aura\Router\Matcher as AuraMatcher;
+use Aura\Router\Route as AuraRoute;
+use Aura\Router\RouterContainer as AuraRouterContainer;
+use Fig\Http\Message\RequestMethodInterface as RequestMethod;
 use PHPUnit_Framework_TestCase as TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UriInterface;
@@ -18,23 +24,46 @@ use Zend\Expressive\Router\RouteResult;
 
 class AuraRouterTest extends TestCase
 {
+    /** @var AuraRouterContainer */
+    private $auraRouterContainer;
+
+    /** @var AuraRoute */
+    private $auraRoute;
+
+    /** @var AuraMap */
+    private $auraMap;
+
+    /** @var AuraMatcher */
+    private $auraMatcher;
+
+    /** @var AuraGenerator */
+    private $auraGenerator;
+
     public function setUp()
     {
-        $this->auraRouter = $this->prophesize('Aura\Router\Router');
-        $this->auraRoute  = $this->prophesize('Aura\Router\Route');
+        $this->auraRouterContainer = $this->prophesize(AuraRouterContainer::class);
+        $this->auraRoute           = $this->prophesize(AuraRoute::class);
+        $this->auraMap             = $this->prophesize(AuraMap::class);
+        $this->auraMatcher         = $this->prophesize(AuraMatcher::class);
+        $this->auraGenerator       = $this->prophesize(AuraGenerator::class);
+
+        $this->auraRouterContainer->getMap()->willReturn($this->auraMap->reveal());
+        $this->auraRouterContainer->getMatcher()->willReturn($this->auraMatcher->reveal());
+        $this->auraRouterContainer->getGenerator()->willReturn($this->auraGenerator->reveal());
     }
 
     public function getRouter()
     {
-        return new AuraRouter($this->auraRouter->reveal());
+        return new AuraRouter($this->auraRouterContainer->reveal());
     }
 
     public function testAddingRouteAggregatesRoute()
     {
-        $route = new Route('/foo', 'foo', ['GET']);
+        $route  = new Route('/foo', 'foo', [RequestMethod::METHOD_GET]);
         $router = $this->getRouter();
         $router->addRoute($route);
         $this->assertAttributeContains($route, 'routesToInject', $router);
+
         return $router;
     }
 
@@ -43,16 +72,15 @@ class AuraRouterTest extends TestCase
      */
     public function testMatchingInjectsRouteIntoAuraRouter()
     {
-        $route = new Route('/foo', 'foo', ['GET']);
+        $route  = new Route('/foo', 'foo', [RequestMethod::METHOD_GET]);
         $router = $this->getRouter();
         $router->addRoute($route);
 
-        $this->auraRoute->setServer([
-            'REQUEST_METHOD' => 'GET',
-        ])->shouldBeCalled();
-        $this->auraRouter->add('/foo^GET', '/foo', 'foo')->willReturn($this->auraRoute->reveal());
-        $this->auraRouter->match('/foo', ['REQUEST_METHOD' => 'GET'])->willReturn(false);
-        $this->auraRouter->getFailedRoute()->willReturn(null);
+        $auraRoute = new AuraRoute();
+        $auraRoute->name($route->getName());
+        $auraRoute->path($route->getPath());
+        $auraRoute->handler($route->getMiddleware());
+        $auraRoute->allows($route->getAllowedMethods());
 
         $uri = $this->prophesize(UriInterface::class);
         $uri->getPath()->willReturn('/foo');
@@ -61,8 +89,12 @@ class AuraRouterTest extends TestCase
         $request->getUri()->will(function () use ($uri) {
             return $uri->reveal();
         });
-        $request->getMethod()->willReturn('GET');
+        $request->getMethod()->willReturn(RequestMethod::METHOD_GET);
         $request->getServerParams()->willReturn([]);
+
+        $this->auraMap->addRoute($auraRoute)->shouldBeCalled();
+        $this->auraMatcher->match($request)->willReturn(false);
+        $this->auraMatcher->getFailedRoute()->willReturn(null);
 
         $router->match($request->reveal());
     }
@@ -72,32 +104,37 @@ class AuraRouterTest extends TestCase
      */
     public function testUriGenerationInjectsRouteIntoAuraRouter()
     {
-        $route = new Route('/foo', 'foo', ['GET']);
+        $route  = new Route('/foo', 'foo', [RequestMethod::METHOD_GET]);
         $router = $this->getRouter();
         $router->addRoute($route);
 
-        $this->auraRoute->setServer([
-            'REQUEST_METHOD' => 'GET',
-        ])->shouldBeCalled();
-        $this->auraRouter->add('/foo^GET', '/foo', 'foo')->willReturn($this->auraRoute->reveal());
-        $this->auraRouter->generateRaw('foo', [])->willReturn('/foo');
+        $auraRoute = new AuraRoute();
+        $auraRoute->name($route->getName());
+        $auraRoute->path($route->getPath());
+        $auraRoute->handler($route->getMiddleware());
+        $auraRoute->allows($route->getAllowedMethods());
+
+        $this->auraMap->addRoute($auraRoute)->shouldBeCalled();
+        $this->auraGenerator->generateRaw('foo', [])->shouldBeCalled()->willReturn('/foo');
 
         $this->assertEquals('/foo', $router->generateUri('foo'));
     }
 
     public function testCanSpecifyAuraRouteTokensViaRouteOptions()
     {
-        $route = new Route('/foo', 'foo', ['GET']);
+        $route = new Route('/foo', 'foo', [RequestMethod::METHOD_GET]);
         $route->setOptions(['tokens' => ['foo' => 'bar']]);
 
-        $this->auraRoute->setServer([
-            'REQUEST_METHOD' => 'GET',
-        ])->shouldBeCalled();
-        $this->auraRoute->addTokens($route->getOptions()['tokens'])->shouldBeCalled();
-        // Injection happens when match() or generateUri() are called
-        $this->auraRouter->generateRaw('foo', [])->willReturn('/foo');
+        $auraRoute = new AuraRoute();
+        $auraRoute->name('/foo^GET');
+        $auraRoute->path('/foo');
+        $auraRoute->handler($route->getMiddleware());
+        $auraRoute->allows($route->getAllowedMethods());
+        $auraRoute->tokens($route->getOptions()['tokens']);
 
-        $this->auraRouter->add('/foo^GET', '/foo', 'foo')->willReturn($this->auraRoute->reveal());
+        $this->auraMap->addRoute($auraRoute)->shouldBeCalled();
+        // Injection happens when match() or generateUri() are called
+        $this->auraGenerator->generateRaw('foo', [])->shouldBeCalled()->willReturn('/foo');
 
         $router = $this->getRouter();
         $router->addRoute($route);
@@ -106,17 +143,41 @@ class AuraRouterTest extends TestCase
 
     public function testCanSpecifyAuraRouteValuesViaRouteOptions()
     {
-        $route = new Route('/foo', 'foo', ['GET']);
+        $route = new Route('/foo', 'foo', [RequestMethod::METHOD_GET]);
         $route->setOptions(['values' => ['foo' => 'bar']]);
 
-        $this->auraRoute->setServer([
-            'REQUEST_METHOD' => 'GET',
-        ])->shouldBeCalled();
-        $this->auraRoute->addValues($route->getOptions()['values'])->shouldBeCalled();
+        $auraRoute = new AuraRoute();
+        $auraRoute->name($route->getName());
+        $auraRoute->path($route->getPath());
+        $auraRoute->handler($route->getMiddleware());
+        $auraRoute->allows($route->getAllowedMethods());
+        $auraRoute->defaults($route->getOptions()['values']);
 
-        $this->auraRouter->add('/foo^GET', '/foo', 'foo')->willReturn($this->auraRoute->reveal());
+        $this->auraMap->addRoute($auraRoute)->shouldBeCalled();
         // Injection happens when match() or generateUri() are called
-        $this->auraRouter->generateRaw('foo', [])->willReturn('/foo');
+        $this->auraGenerator->generateRaw('foo', [])->shouldBeCalled()->willReturn('/foo');
+
+        $router = $this->getRouter();
+        $router->addRoute($route);
+        $router->generateUri('foo');
+    }
+
+    public function testCanSpecifyAuraRouteWildcardViaRouteOptions()
+    {
+        $route = new Route('/foo', 'foo', [RequestMethod::METHOD_GET]);
+        $route->setOptions(['wildcard' => 'card']);
+
+        $auraRoute = new AuraRoute();
+        $auraRoute->name($route->getName());
+        $auraRoute->path($route->getPath());
+        $auraRoute->handler($route->getMiddleware());
+        $auraRoute->allows($route->getAllowedMethods());
+        $auraRoute->wildcard($route->getOptions()['wildcard']);
+
+        $this->auraMap->addRoute($auraRoute)->shouldBeCalled();
+
+        // Injection happens when match() or generateUri() are called
+        $this->auraGenerator->generateRaw('foo', [])->willReturn('/foo');
 
         $router = $this->getRouter();
         $router->addRoute($route);
@@ -125,24 +186,28 @@ class AuraRouterTest extends TestCase
 
     public function testMatchingRouteShouldReturnSuccessfulRouteResult()
     {
-        $uri     = $this->prophesize(UriInterface::class);
+        $uri = $this->prophesize(UriInterface::class);
         $uri->getPath()->willReturn('/foo');
 
         $request = $this->prophesize(ServerRequestInterface::class);
         $request->getUri()->willReturn($uri);
-        $request->getMethod()->willReturn('GET');
+        $request->getMethod()->willReturn(RequestMethod::METHOD_GET);
         $request->getServerParams()->willReturn([]);
 
-        $auraRoute = new TestAsset\AuraRoute;
-        $auraRoute->name = '/foo';
-        $auraRoute->params = [
+        $auraRoute = new AuraRoute();
+        $auraRoute->name('/foo');
+        $auraRoute->path('/foo');
+        $auraRoute->handler('foo');
+        $auraRoute->allows([RequestMethod::METHOD_GET]);
+        $auraRoute->attributes([
             'action' => 'foo',
             'bar'    => 'baz',
-        ];
+        ]);
 
-        $this->auraRouter->match('/foo', ['REQUEST_METHOD' => 'GET'])->willReturn($auraRoute);
+        $this->auraMatcher->match($request)->willReturn($auraRoute);
 
         $router = $this->getRouter();
+        $router->addRoute(new Route('/foo', 'foo', [RequestMethod::METHOD_GET], '/foo'));
         $result = $router->match($request->reveal());
         $this->assertInstanceOf(RouteResult::class, $result);
         $this->assertTrue($result->isSuccess());
@@ -156,45 +221,47 @@ class AuraRouterTest extends TestCase
 
     public function testMatchFailureDueToHttpMethodReturnsRouteResultWithAllowedMethods()
     {
-        $route = new Route('/foo', 'foo', ['POST']);
+        $route = new Route('/foo', 'foo', [RequestMethod::METHOD_POST]);
 
-        $uri     = $this->prophesize(UriInterface::class);
+        $uri = $this->prophesize(UriInterface::class);
         $uri->getPath()->willReturn('/foo');
 
         $request = $this->prophesize(ServerRequestInterface::class);
         $request->getUri()->willReturn($uri);
-        $request->getMethod()->willReturn('GET');
+        $request->getMethod()->willReturn(RequestMethod::METHOD_GET);
         $request->getServerParams()->willReturn([]);
 
-        $this->auraRouter->match('/foo', ['REQUEST_METHOD' => 'GET'])->willReturn(false);
+        $this->auraMatcher->match($request)->willReturn(false);
 
-        $auraRoute = new TestAsset\AuraRoute;
-        $auraRoute->method = ['POST'];
+        $auraRoute = new AuraRoute();
+        $auraRoute->allows([RequestMethod::METHOD_POST]);
 
-        $this->auraRouter->getFailedRoute()->willReturn($auraRoute);
+        $this->auraMatcher->getFailedRoute()->willReturn($auraRoute);
 
         $router = $this->getRouter();
         $result = $router->match($request->reveal());
         $this->assertInstanceOf(RouteResult::class, $result);
         $this->assertTrue($result->isFailure());
-        $this->assertSame(['POST'], $result->getAllowedMethods());
+        $this->assertSame([RequestMethod::METHOD_POST], $result->getAllowedMethods());
     }
 
     public function testMatchFailureNotDueToHttpMethodReturnsGenericRouteFailureResult()
     {
-        $route = new Route('/foo', 'foo', ['GET']);
+        $route = new Route('/foo', 'foo', [RequestMethod::METHOD_GET]);
 
-        $uri     = $this->prophesize(UriInterface::class);
+        $uri = $this->prophesize(UriInterface::class);
         $uri->getPath()->willReturn('/bar');
 
         $request = $this->prophesize(ServerRequestInterface::class);
         $request->getUri()->willReturn($uri);
-        $request->getMethod()->willReturn('PUT');
+        $request->getMethod()->willReturn(RequestMethod::METHOD_PUT);
         $request->getServerParams()->willReturn([]);
 
+        $this->auraMatcher->match($request)->willReturn(false);
 
-        $this->auraRouter->match('/bar', ['REQUEST_METHOD' => 'PUT'])->willReturn(false);
-        $this->auraRouter->getFailedRoute()->willReturn(new TestAsset\AuraRoute);
+        $auraRoute = new AuraRoute();
+
+        $this->auraMatcher->getFailedRoute()->willReturn($auraRoute);
 
         $router = $this->getRouter();
         $result = $router->match($request->reveal());
@@ -210,9 +277,9 @@ class AuraRouterTest extends TestCase
     public function testCanGenerateUriFromRoutes()
     {
         $router = new AuraRouter();
-        $route1 = new Route('/foo', 'foo', ['POST'], 'foo-create');
-        $route2 = new Route('/foo', 'foo', ['GET'], 'foo-list');
-        $route3 = new Route('/foo/{id}', 'foo', ['GET'], 'foo');
+        $route1 = new Route('/foo', 'foo', [RequestMethod::METHOD_POST], 'foo-create');
+        $route2 = new Route('/foo', 'foo', [RequestMethod::METHOD_GET], 'foo-list');
+        $route3 = new Route('/foo/{id}', 'foo', [RequestMethod::METHOD_GET], 'foo');
         $route4 = new Route('/bar/{baz}', 'bar', Route::HTTP_METHOD_ANY, 'bar');
 
         $router->addRoute($route1);
@@ -231,19 +298,18 @@ class AuraRouterTest extends TestCase
      */
     public function testReturns404ResultIfAuraReturnsNullForFailedRoute()
     {
-        $route = new Route('/foo', 'foo', ['GET']);
+        $route = new Route('/foo', 'foo', [RequestMethod::METHOD_GET]);
 
-        $uri     = $this->prophesize(UriInterface::class);
+        $uri = $this->prophesize(UriInterface::class);
         $uri->getPath()->willReturn('/bar');
 
         $request = $this->prophesize(ServerRequestInterface::class);
         $request->getUri()->willReturn($uri);
-        $request->getMethod()->willReturn('PUT');
+        $request->getMethod()->willReturn(RequestMethod::METHOD_PUT);
         $request->getServerParams()->willReturn([]);
 
-
-        $this->auraRouter->match('/bar', ['REQUEST_METHOD' => 'PUT'])->willReturn(false);
-        $this->auraRouter->getFailedRoute()->willReturn(null);
+        $this->auraMatcher->match($request)->willReturn(false);
+        $this->auraMatcher->getFailedRoute()->willReturn(null);
 
         $router = $this->getRouter();
         $result = $router->match($request->reveal());
@@ -259,7 +325,7 @@ class AuraRouterTest extends TestCase
     public function testGeneratedUriIsNotEncoded()
     {
         $router = new AuraRouter();
-        $route  = new Route('/foo/{id}', 'foo', ['GET'], 'foo');
+        $route  = new Route('/foo/{id}', 'foo', [RequestMethod::METHOD_GET], 'foo');
 
         $router->addRoute($route);
 
@@ -267,5 +333,63 @@ class AuraRouterTest extends TestCase
             '/foo/bar is not encoded',
             $router->generateUri('foo', ['id' => 'bar is not encoded'])
         );
+    }
+
+    public function testSuccessfulRouteResultComposesMatchedRoute()
+    {
+        $route = new Route('/foo', 'foo', [RequestMethod::METHOD_GET]);
+
+        $uri = $this->prophesize(UriInterface::class);
+        $uri->getPath()->willReturn('/foo');
+
+        $request = $this->prophesize(ServerRequestInterface::class);
+        $request->getUri()->willReturn($uri);
+        $request->getMethod()->willReturn(RequestMethod::METHOD_GET);
+        $request->getServerParams()->willReturn([]);
+
+        $router = new AuraRouter();
+        $router->addRoute($route);
+
+        $result = $router->match($request->reveal());
+        $this->assertInstanceOf(RouteResult::class, $result);
+        $this->assertTrue($result->isSuccess());
+
+        $matched = $result->getMatchedRoute();
+        $this->assertSame($route, $matched);
+    }
+
+    public function implicitMethods()
+    {
+        return [
+            'head'    => [RequestMethod::METHOD_HEAD],
+            'options' => [RequestMethod::METHOD_OPTIONS],
+        ];
+    }
+
+    /**
+     * @dataProvider implicitMethods
+     */
+    public function testHeadAndOptionsAlwaysResultInRoutingSuccessIfPathMatches($method)
+    {
+        $uri = $this->prophesize(UriInterface::class);
+        $uri->getPath()->willReturn('/foo');
+
+        $request = $this->prophesize(ServerRequestInterface::class);
+        $request->getUri()->willReturn($uri);
+        $request->getMethod()->willReturn($method);
+        $request->getServerParams()->willReturn([]);
+
+        // Not mocking the router container or Aura\Route; this particular test
+        // is testing how the parts integrate.
+        $router = new AuraRouter();
+        $route  = new Route('/foo', 'foo', [RequestMethod::METHOD_POST]);
+        $router->addRoute($route);
+
+        $result = $router->match($request->reveal());
+        $this->assertInstanceOf(RouteResult::class, $result);
+        $this->assertTrue($result->isSuccess());
+
+        $matched = $result->getMatchedRoute();
+        $this->assertSame($route, $matched);
     }
 }
