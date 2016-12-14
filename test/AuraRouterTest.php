@@ -390,4 +390,48 @@ class AuraRouterTest extends TestCase
         $matched = $result->getMatchedRoute();
         $this->assertSame($route, $matched);
     }
+
+    public function testMethodFailureWhenMultipleRoutesUseSamePathShouldResultIn405ListingAllAllowedMethods()
+    {
+        $uri = $this->prophesize(UriInterface::class);
+        $uri->getPath()->willReturn('/foo');
+
+        $request = $this->prophesize(ServerRequestInterface::class);
+        $request->getUri()->willReturn($uri);
+        $request->getMethod()->willReturn(RequestMethod::METHOD_PATCH);
+        $request->getServerParams()->willReturn([]);
+
+        // Not mocking the router container or Aura\Route; this particular test
+        // is testing how the parts integrate.
+        $router = new AuraRouter();
+        $router->addRoute(new Route('/foo', 'foo', [RequestMethod::METHOD_GET]));
+        $router->addRoute(new Route('/foo', 'bar', [RequestMethod::METHOD_POST]));
+
+        $result = $router->match($request->reveal());
+        $this->assertInstanceOf(RouteResult::class, $result);
+        $this->assertTrue($result->isFailure());
+        $this->assertEquals([RequestMethod::METHOD_GET, RequestMethod::METHOD_POST], $result->getAllowedMethods());
+    }
+
+    public function testFailureToMatchSubpathWhenRootPathRouteIsPresentShouldResultIn404()
+    {
+        $uri = $this->prophesize(UriInterface::class);
+        $uri->getPath()->willReturn('/foo');
+
+        $request = $this->prophesize(ServerRequestInterface::class);
+        $request->getUri()->willReturn($uri);
+        $request->getMethod()->willReturn(RequestMethod::METHOD_GET);
+        $request->getServerParams()->willReturn([]);
+
+        // Not mocking the router container or Aura\Route; this particular test
+        // is testing how the parts integrate.
+        $router = new AuraRouter();
+        $router->addRoute(new Route('/', 'foo', [RequestMethod::METHOD_GET]));
+        $router->addRoute(new Route('/bar', 'bar', [RequestMethod::METHOD_GET]));
+
+        $result = $router->match($request->reveal());
+        $this->assertInstanceOf(RouteResult::class, $result);
+        $this->assertTrue($result->isFailure());
+        $this->assertFalse($result->isMethodFailure());
+    }
 }

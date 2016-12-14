@@ -9,6 +9,7 @@ namespace Zend\Expressive\Router;
 
 use Aura\Router\Route as AuraRoute;
 use Aura\Router\RouterContainer as Router;
+use Aura\Router\Rule\Path as PathRule;
 use Fig\Http\Message\RequestMethodInterface as RequestMethod;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
@@ -134,8 +135,12 @@ class AuraRouter implements RouterInterface
     {
         $failedRoute = $this->router->getMatcher()->getFailedRoute();
 
-        // Evidently, getFailedRoute() can sometimes return null; these are 404 conditions.
-        if (null === $failedRoute) {
+        // Evidently, getFailedRoute() can sometimes return null; these are 404
+        // conditions. Additionally, if the failure is due to inability to
+        // match the path, that to is a 404 condition.
+        if (null === $failedRoute
+            || $failedRoute->failedRule === PathRule::class
+        ) {
             return RouteResult::fromRouteFailure();
         }
 
@@ -146,17 +151,20 @@ class AuraRouter implements RouterInterface
             return $this->marshalMatchedRoute($failedRoute, $request->getMethod());
         }
 
+        // Check to see if we have an entry in the method path map; if so,
+        // register a 405 using that value.
+        list($path) = explode('^', $failedRoute->name);
+        if (array_key_exists($path, $this->pathMethodMap)) {
+            return RouteResult::fromRouteFailure($this->pathMethodMap[$path]);
+        }
+
+        // If the above failed, check to see if the failure was due to method used.
+        // This should only occur when HTTP_METHOD_ANY is used; however, in
+        // that case, no method should result in failure.
         if ($failedRoute->allows
             && ! in_array($request->getMethod(), $failedRoute->allows)
         ) {
             return RouteResult::fromRouteFailure($failedRoute->allows);
-        }
-
-        // Check to see if the route regex matched; if so, and we have an entry
-        // for the path, register a 405.
-        list($path) = explode('^', $failedRoute->name);
-        if (array_key_exists($path, $this->pathMethodMap)) {
-            return RouteResult::fromRouteFailure($this->pathMethodMap[$path]);
         }
 
         return RouteResult::fromRouteFailure();
@@ -244,7 +252,7 @@ class AuraRouter implements RouterInterface
         $this->router->getMap()->addRoute($auraRoute);
 
         $this->pathMethodMap[$path] = array_key_exists($path, $this->pathMethodMap)
-            ? array_merge($this->pathMethodMap[$path], $allowedMethods)
+            ? array_unique(array_merge($this->pathMethodMap[$path], $allowedMethods))
             : $allowedMethods;
     }
 }
