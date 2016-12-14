@@ -206,6 +206,7 @@ class AuraRouterTest extends TestCase
         $this->auraMatcher->match($request)->willReturn($auraRoute);
 
         $router = $this->getRouter();
+        $router->addRoute(new Route('/foo', 'foo', ['GET'], '/foo'));
         $result = $router->match($request->reveal());
         $this->assertInstanceOf(RouteResult::class, $result);
         $this->assertTrue($result->isSuccess());
@@ -331,5 +332,36 @@ class AuraRouterTest extends TestCase
             '/foo/bar is not encoded',
             $router->generateUri('foo', ['id' => 'bar is not encoded'])
         );
+    }
+
+    public function testSuccessfulRouteResultComposesMatchedRoute()
+    {
+        $route = new Route('/foo', 'foo', ['GET']);
+
+        $uri = $this->prophesize(UriInterface::class);
+        $uri->getPath()->willReturn('/foo');
+
+        $request = $this->prophesize(ServerRequestInterface::class);
+        $request->getUri()->willReturn($uri);
+        $request->getMethod()->willReturn('GET');
+        $request->getServerParams()->willReturn([]);
+
+        $auraRoute = new AuraRoute();
+        $auraRoute->name('/foo');
+        $auraRoute->path('/foo');
+        $auraRoute->handler('foo');
+        $auraRoute->allows(['GET']);
+
+        $this->auraMatcher->match($request)->willReturn($auraRoute);
+
+        $router = $this->getRouter();
+        $router->addRoute($route);
+
+        $result = $router->match($request->reveal());
+        $this->assertInstanceOf(RouteResult::class, $result);
+        $this->assertTrue($result->isSuccess());
+
+        $matched = $result->getMatchedRoute();
+        $this->assertSame($route, $matched);
     }
 }
