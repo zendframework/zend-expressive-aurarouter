@@ -19,7 +19,7 @@
     },
     "require": {
         "php": "^5.5 || ^7.0",
-        "aura/router": "^2.3",
+        "aura/router": "^3.0",
         "psr/http-message": "^1.0",
         "zendframework/zend-expressive-router": "^1.0"
     },
