@@ -21,6 +21,16 @@ All notable changes to this project will be documented in this file, in reverse 
   updates the component to use the Aura.Router version 3 series instead of the
   version 2 series. The exposed API remains the same.
 
+- [#15](https://github.com/zendframework/zend-expressive-aurarouter/pull/15)
+  updates the router to populate the returned `RouteResult` with the associated
+  `Zend\Expressive\Router\Route` instance on a successful route match.
+
+- [#15](https://github.com/zendframework/zend-expressive-aurarouter/pull/15)
+  updates the router to always honor `HEAD` and `OPTIONS` requests when a path
+  matches. Dispatchers will need to check the `Route` composed in the
+  `RouteResult` to determine if matches against these methods were explicit or
+  implicit (using `Route::implicitHead()` and `Route::implicitOptions()`).
+
 ### Deprecated
 
 - Nothing.

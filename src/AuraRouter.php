@@ -11,6 +11,7 @@ namespace Zend\Expressive\Router;
 
 use Aura\Router\Route as AuraRoute;
 use Aura\Router\RouterContainer as Router;
+use Fig\Http\Message\RequestMethodInterface as RequestMethod;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
 /**
@@ -28,16 +29,27 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class AuraRouter implements RouterInterface
 {
     /**
-     * Aura router
+     * Implicit HTTP methods (should work for any route)
+     */
+    const HTTP_METHODS_IMPLICIT = [
+        RequestMethod::METHOD_HEAD,
+        RequestMethod::METHOD_OPTIONS,
+    ];
+
+    /**
+     * Map paths to allowed HTTP methods.
      *
+     * @var array
+     */
+    private $pathMethodMap = [];
+
+    /**
      * @var Router
      */
     private $router;
 
     /**
-     * Store the path and the HTTP methods allowed
-     *
-     * @var array
+     * @var Route[]
      */
     private $routes = [];
 
@@ -86,7 +98,7 @@ class AuraRouter implements RouterInterface
             return $this->marshalFailedRoute($request);
         }
 
-        return $this->marshalMatchedRoute($route);
+        return $this->marshalMatchedRoute($route, $request->getMethod());
     }
 
     /**
@@ -129,6 +141,13 @@ class AuraRouter implements RouterInterface
             return RouteResult::fromRouteFailure();
         }
 
+        // Allow HEAD and OPTIONS requests if the failed route matches the path
+        if (in_array($request->getMethod(), self::HTTP_METHODS_IMPLICIT, true)
+            && $failedRoute->allows
+        ) {
+            return $this->marshalMatchedRoute($failedRoute, $request->getMethod());
+        }
+
         if ($failedRoute->allows
             && ! in_array($request->getMethod(), $failedRoute->allows)
         ) {
@@ -138,32 +157,40 @@ class AuraRouter implements RouterInterface
         // Check to see if the route regex matched; if so, and we have an entry
         // for the path, register a 405.
         list($path) = explode('^', $failedRoute->name);
-        if (array_key_exists($path, $this->routes)
-        ) {
-            return RouteResult::fromRouteFailure($this->routes[$path]);
+        if (array_key_exists($path, $this->pathMethodMap)) {
+            return RouteResult::fromRouteFailure($this->pathMethodMap[$path]);
         }
 
         return RouteResult::fromRouteFailure();
     }
 
     /**
-     * Marshals a route result based on the matched AuraRoute.
+     * Marshals a route result based on the matched AuraRoute and request method.
      *
-     * Note: no actual typehint is provided here; Aura Route instances provide
-     * property overloading, which is difficult to mock for testing; we simply
-     * assume an object at this point.
-     *
-     * @param AuraRoute $route
-     *
+     * @param AuraRoute $auraRoute
      * @return RouteResult
      */
-    private function marshalMatchedRoute($route)
+    private function marshalMatchedRoute(AuraRoute $auraRoute, $method)
     {
-        return RouteResult::fromRouteMatch(
-            $route->name,
-            $route->handler,
-            $route->attributes
-        );
+        $route = array_reduce($this->routes, function ($matched, $route) use ($auraRoute, $method) {
+            if ($matched) {
+                return $matched;
+            }
+
+            // We store the route name already, so we can match on that
+            if ($auraRoute->name === $route->getName()) {
+                return $route;
+            }
+
+            return false;
+        }, false);
+
+        if (! $route) {
+            // This should likely never occur, but is present for completeness.
+            return RouteResult::fromRouteFailure();
+        }
+
+        return RouteResult::fromRoute($route, $auraRoute->attributes);
     }
 
     /**
@@ -173,6 +200,7 @@ class AuraRouter implements RouterInterface
     {
         foreach ($this->routesToInject as $index => $route) {
             $this->injectRoute($route);
+            $this->routes[] = $route;
             unset($this->routesToInject[$index]);
         }
     }
@@ -208,19 +236,17 @@ class AuraRouter implements RouterInterface
 
         $allowedMethods = $route->getAllowedMethods();
         if (Route::HTTP_METHOD_ANY === $allowedMethods) {
-            // Add route here for improved testability
+            // Matches any method; no special handling required
             $this->router->getMap()->addRoute($auraRoute);
-
             return;
         }
 
+        // Inject allowed methods, and map them for 405 detection
         $auraRoute->allows($allowedMethods);
-        // Add route here for improved testability
         $this->router->getMap()->addRoute($auraRoute);
 
-        if (array_key_exists($path, $this->routes)) {
-            $allowedMethods = array_merge($this->routes[$path], $allowedMethods);
-        }
-        $this->routes[$path] = $allowedMethods;
+        $this->pathMethodMap[$path] = array_key_exists($path, $this->pathMethodMap)
+            ? array_merge($this->pathMethodMap[$path], $allowedMethods)
+            : $allowedMethods;
     }
 }
