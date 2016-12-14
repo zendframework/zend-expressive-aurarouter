@@ -166,14 +166,17 @@ class AuraRouterTest extends TestCase
         $route = new Route('/foo', 'foo', ['GET']);
         $route->setOptions(['wildcard' => 'card']);
 
-        $this->auraRoute->setServer([
-            'REQUEST_METHOD' => 'GET',
-        ])->shouldBeCalled();
-        $this->auraRoute->setWildcard($route->getOptions()['wildcard'])->shouldBeCalled();
+        $auraRoute = new AuraRoute();
+        $auraRoute->name($route->getName());
+        $auraRoute->path($route->getPath());
+        $auraRoute->handler($route->getMiddleware());
+        $auraRoute->allows($route->getAllowedMethods());
+        $auraRoute->wildcard($route->getOptions()['wildcard']);
 
-        $this->auraRouter->add('/foo^GET', '/foo', 'foo')->willReturn($this->auraRoute->reveal());
+        $this->auraMap->addRoute($auraRoute)->shouldBeCalled();
+
         // Injection happens when match() or generateUri() are called
-        $this->auraRouter->generateRaw('foo', [])->willReturn('/foo');
+        $this->auraGenerator->generateRaw('foo', [])->willReturn('/foo');
 
         $router = $this->getRouter();
         $router->addRoute($route);

@@ -130,7 +130,7 @@ class AuraRouter implements RouterInterface
         }
 
         if ($failedRoute->allows
-            && !in_array($request->getMethod(), $failedRoute->allows)
+            && ! in_array($request->getMethod(), $failedRoute->allows)
         ) {
             return RouteResult::fromRouteFailure($failedRoute->allows);
         }
@@ -201,7 +201,7 @@ class AuraRouter implements RouterInterface
                     $auraRoute->defaults($value);
                     break;
                 case 'wildcard':
-                    $auraRoute->setWildcard($value);
+                    $auraRoute->wildcard($value);
                     break;
             }
         }
