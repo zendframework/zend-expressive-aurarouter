@@ -91,10 +91,20 @@ class AuraRouter implements RouterInterface
         // Must inject routes prior to matching.
         $this->injectRoutes();
 
-        $route = $this->router->getMatcher()->match($request);
+        $matcher = $this->router->getMatcher();
+        $route = $matcher->match($request);
 
         if (false === $route) {
-            return $this->marshalFailedRoute($request);
+            return $this->marshalFailedRoute($request, $matcher->getFailedRoute());
+        }
+
+        // The $allows property is empty if no HTTP methods were specified
+        // during route creation; such a situation is a (potential) 405.
+        // We have to retrieve the value first, because Aura\Route uses
+        // property overloading, which does not play well with empty().
+        $allows = $route->allows;
+        if (empty($allows)) {
+            return $this->marshalFailedRoute($request, $route);
         }
 
         return $this->marshalMatchedRoute($route, $request->getMethod());
@@ -128,13 +138,11 @@ class AuraRouter implements RouterInterface
      * methods when creating the result.
      *
      * @param Request $request
-     *
+     * @param null|AuraRoute $failedRoute
      * @return RouteResult
      */
-    private function marshalFailedRoute(Request $request)
+    private function marshalFailedRoute(Request $request, AuraRoute $failedRoute = null)
     {
-        $failedRoute = $this->router->getMatcher()->getFailedRoute();
-
         // Evidently, getFailedRoute() can sometimes return null; these are 404
         // conditions. Additionally, if the failure is due to inability to
         // match the path, that to is a 404 condition.
@@ -145,9 +153,7 @@ class AuraRouter implements RouterInterface
         }
 
         // Allow HEAD and OPTIONS requests if the failed route matches the path
-        if (in_array($request->getMethod(), self::HTTP_METHODS_IMPLICIT, true)
-            && $failedRoute->allows
-        ) {
+        if (in_array($request->getMethod(), self::HTTP_METHODS_IMPLICIT, true)) {
             return $this->marshalMatchedRoute($failedRoute, $request->getMethod());
         }
 
