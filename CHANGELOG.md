@@ -20,7 +20,7 @@ All notable changes to this project will be documented in this file, in reverse 
 
 - Nothing.
 
-## 1.1.2 - TBD
+## 1.1.2 - 2016-12-15
 
 ### Added
 
@@ -36,7 +36,12 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Fixed
 
-- Nothing.
+- [#18](https://github.com/zendframework/zend-expressive-aurarouter/pull/18)
+  fixes what happens when a route specifies no valid HTTP methods. Aura.Router
+  always treats these as routing matches, but they should not be. This patch
+  updates the implementation to determine if the matched route specifies any
+  valid HTTP methods; if not, it treats it as a potential failed result
+  (potential only, as HEAD and OPTIONS requests will be implicitly successful).
 
 ## 1.1.1 - 2016-12-14
 
