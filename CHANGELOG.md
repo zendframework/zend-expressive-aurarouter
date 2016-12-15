@@ -20,7 +20,7 @@ All notable changes to this project will be documented in this file, in reverse 
 
 - Nothing.
 
-## 1.1.3 - TBD
+## 1.1.3 - 2016-12-15
 
 ### Added
 
@@ -36,7 +36,9 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Fixed
 
-- Nothing.
+- [#19](https://github.com/zendframework/zend-expressive-aurarouter/pull/19)
+  ensures that when `HTTP_METHOD_ANY` is specified for the route, any HTTP
+  method results in a successful routing result.
 
 ## 1.1.2 - 2016-12-15
 

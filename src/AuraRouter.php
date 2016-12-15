@@ -104,10 +104,10 @@ class AuraRouter implements RouterInterface
         // property overloading, which does not play well with empty().
         $allows = $route->allows;
         if (empty($allows)) {
-            return $this->marshalFailedRoute($request, $route);
+            return $this->handleRouteWithUndefinedHttpMethods($route, $request);
         }
 
-        return $this->marshalMatchedRoute($route, $request->getMethod());
+        return $this->marshalMatchedRoute($route);
     }
 
     /**
@@ -154,7 +154,7 @@ class AuraRouter implements RouterInterface
 
         // Allow HEAD and OPTIONS requests if the failed route matches the path
         if (in_array($request->getMethod(), self::HTTP_METHODS_IMPLICIT, true)) {
-            return $this->marshalMatchedRoute($failedRoute, $request->getMethod());
+            return $this->marshalMatchedRoute($failedRoute);
         }
 
         // Check to see if we have an entry in the method path map; if so,
@@ -182,21 +182,9 @@ class AuraRouter implements RouterInterface
      * @param AuraRoute $auraRoute
      * @return RouteResult
      */
-    private function marshalMatchedRoute(AuraRoute $auraRoute, $method)
+    private function marshalMatchedRoute(AuraRoute $auraRoute)
     {
-        $route = array_reduce($this->routes, function ($matched, $route) use ($auraRoute, $method) {
-            if ($matched) {
-                return $matched;
-            }
-
-            // We store the route name already, so we can match on that
-            if ($auraRoute->name === $route->getName()) {
-                return $route;
-            }
-
-            return false;
-        }, false);
-
+        $route = $this->matchAuraRouteToRoute($auraRoute);
         if (! $route) {
             // This should likely never occur, but is present for completeness.
             return RouteResult::fromRouteFailure();
@@ -260,5 +248,62 @@ class AuraRouter implements RouterInterface
         $this->pathMethodMap[$path] = array_key_exists($path, $this->pathMethodMap)
             ? array_unique(array_merge($this->pathMethodMap[$path], $allowedMethods))
             : $allowedMethods;
+    }
+
+    /**
+     * Match an Aura\Route to a Zend\Expressive\Router\Route.
+     *
+     * @param AuraRoute $auraRoute
+     * @return false|Route False if unable to match to a composed route instance.
+     */
+    private function matchAuraRouteToRoute(AuraRoute $auraRoute)
+    {
+        return array_reduce($this->routes, function ($matched, $route) use ($auraRoute) {
+            if ($matched) {
+                return $matched;
+            }
+
+            // We store the route name already, so we can match on that
+            if ($auraRoute->name === $route->getName()) {
+                return $route;
+            }
+
+            return false;
+        }, false);
+    }
+
+    /**
+     * Handle a route with undefined allowed HTTP methods.
+     *
+     * Aura\Route::$allows can be empty in one of two situations:
+     *
+     * - all HTTP methods are supported
+     * - no HTTP methods are supported
+     *
+     * These need to be handled differently, so this method attempts to retrieve
+     * the associated Zend\Expressive\Router\Route instance.
+     *
+     * If found, it checks to see if the route allows ANY HTTP method, and, if
+     * so, marshals a successful route result.
+     *
+     * Otherwise, it marshals a failed route result (contingent on implicit
+     * support for HEAD and OPTIONS).
+     *
+     * @param AuraRoute $auraRoute
+     * @param Request $request
+     * @return RouteResult
+     */
+    private function handleRouteWithUndefinedHttpMethods(AuraRoute $auraRoute, Request $request)
+    {
+        $route = $this->matchAuraRouteToRoute($auraRoute);
+        if (! $route) {
+            return $this->marshalFailedRoute($request, $auraRoute);
+        }
+
+        if ($route->getAllowedMethods() === Route::HTTP_METHOD_ANY) {
+            return $this->marshalMatchedRoute($auraRoute);
+        }
+
+        return $this->marshalFailedRoute($request, $auraRoute);
     }
 }
