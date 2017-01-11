@@ -1,7 +1,7 @@
 <?php
 /**
  * @see       https://github.com/zendframework/zend-expressive-aurarouter for the canonical source repository
- * @copyright Copyright (c) 2015-2016 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2015-2017 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   https://github.com/zendframework/zend-expressive-aurarouter/blob/master/LICENSE.md New BSD License
  */
 
@@ -113,7 +113,7 @@ class AuraRouter implements RouterInterface
     /**
      * @inheritDoc
      */
-    public function generateUri($name, array $substitutions = [])
+    public function generateUri($name, array $substitutions = [], array $options = [])
     {
         // Must inject routes prior to generating URIs.
         $this->injectRoutes();
