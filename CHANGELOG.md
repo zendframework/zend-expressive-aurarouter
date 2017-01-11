@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 2.0.0 - TBD
+## 2.0.0 - 2017-01-11
 
 ### Added
 
@@ -16,24 +16,6 @@ All notable changes to this project will be documented in this file, in reverse 
   options, such as a translator and/or translation text domain, via the new
   argument when generating a URI. Currently, Aura.Router does not support any
   options.
-
-### Deprecated
-
-- Nothing.
-
-### Removed
-
-- Nothing.
-
-### Fixed
-
-- Nothing.
-
-## 1.1.4 - TBD
-
-### Added
-
-- Nothing.
 
 ### Deprecated
 
