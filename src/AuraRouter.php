@@ -76,7 +76,7 @@ class AuraRouter implements RouterInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function addRoute(Route $route)
     {
@@ -84,7 +84,7 @@ class AuraRouter implements RouterInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function match(Request $request)
     {
@@ -111,7 +111,7 @@ class AuraRouter implements RouterInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function generateUri($name, array $substitutions = [], array $options = [])
     {
