@@ -219,8 +219,6 @@ class AuraRouterTest extends TestCase
 
     public function testMatchFailureDueToHttpMethodReturnsRouteResultWithAllowedMethods()
     {
-        $route = new Route('/foo', 'foo', [RequestMethod::METHOD_POST]);
-
         $uri = $this->prophesize(UriInterface::class);
         $uri->getPath()->willReturn('/foo');
 
@@ -245,8 +243,6 @@ class AuraRouterTest extends TestCase
 
     public function testMatchFailureNotDueToHttpMethodReturnsGenericRouteFailureResult()
     {
-        $route = new Route('/foo', 'foo', [RequestMethod::METHOD_GET]);
-
         $uri = $this->prophesize(UriInterface::class);
         $uri->getPath()->willReturn('/bar');
 
@@ -296,8 +292,6 @@ class AuraRouterTest extends TestCase
      */
     public function testReturns404ResultIfAuraReturnsNullForFailedRoute()
     {
-        $route = new Route('/foo', 'foo', [RequestMethod::METHOD_GET]);
-
         $uri = $this->prophesize(UriInterface::class);
         $uri->getPath()->willReturn('/bar');
 
