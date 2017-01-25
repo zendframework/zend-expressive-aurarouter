@@ -1,7 +1,7 @@
 <?php
 /**
  * @see       https://github.com/zendframework/zend-expressive-aurarouter for the canonical source repository
- * @copyright Copyright (c) 2015-2016 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2015-2017 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   https://github.com/zendframework/zend-expressive-aurarouter/blob/master/LICENSE.md New BSD License
  */
 
@@ -13,7 +13,7 @@ use Aura\Router\Matcher as AuraMatcher;
 use Aura\Router\Route as AuraRoute;
 use Aura\Router\RouterContainer as AuraRouterContainer;
 use Fig\Http\Message\RequestMethodInterface as RequestMethod;
-use PHPUnit_Framework_TestCase as TestCase;
+use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UriInterface;
 use Zend\Expressive\Router\AuraRouter;
@@ -360,6 +360,8 @@ class AuraRouterTest extends TestCase
 
     /**
      * @dataProvider implicitMethods
+     *
+     * @param string $method
      */
     public function testHeadAndOptionsAlwaysResultInRoutingSuccessIfPathMatches($method)
     {
@@ -466,6 +468,8 @@ class AuraRouterTest extends TestCase
 
     /**
      * @dataProvider allHttpMethods
+     *
+     * @param string $method
      */
     public function testWhenRouteAllowsAnyHttpMethodRouterShouldResultInSuccess($method)
     {
