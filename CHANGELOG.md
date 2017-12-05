@@ -2,12 +2,16 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 2.1.0 - TBD
+## 2.1.0 - 2017-12-05
 
 ### Added
 
 - [#23](https://github.com/zendframework/zend-expressive-aurarouter/pull/23)
   adds support for PHP 7.2.
+
+- [#25](https://github.com/zendframework/zend-expressive-aurarouter/pull/25)
+  adds support for the 3.0.0-dev series of zend-expressive-router, which has an
+  API that is compatible with the 2.X series.
 
 ### Deprecated
 
