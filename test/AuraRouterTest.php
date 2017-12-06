@@ -14,6 +14,7 @@ use Aura\Router\Matcher as AuraMatcher;
 use Aura\Router\Route as AuraRoute;
 use Aura\Router\RouterContainer as AuraRouterContainer;
 use Fig\Http\Message\RequestMethodInterface as RequestMethod;
+use Interop\Http\Server\MiddlewareInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UriInterface;
@@ -38,7 +39,7 @@ class AuraRouterTest extends TestCase
     /** @var AuraGenerator */
     private $auraGenerator;
 
-    public function setUp()
+    protected function setUp()
     {
         $this->auraRouterContainer = $this->prophesize(AuraRouterContainer::class);
         $this->auraRoute           = $this->prophesize(AuraRoute::class);
@@ -51,14 +52,19 @@ class AuraRouterTest extends TestCase
         $this->auraRouterContainer->getGenerator()->willReturn($this->auraGenerator->reveal());
     }
 
-    public function getRouter()
+    private function getRouter() : AuraRouter
     {
         return new AuraRouter($this->auraRouterContainer->reveal());
     }
 
+    private function getMiddleware() : MiddlewareInterface
+    {
+        return $this->prophesize(MiddlewareInterface::class)->reveal();
+    }
+
     public function testAddingRouteAggregatesRoute()
     {
-        $route  = new Route('/foo', 'foo', [RequestMethod::METHOD_GET]);
+        $route  = new Route('/foo', $this->getMiddleware(), [RequestMethod::METHOD_GET]);
         $router = $this->getRouter();
         $router->addRoute($route);
         $this->assertAttributeContains($route, 'routesToInject', $router);
@@ -71,7 +77,7 @@ class AuraRouterTest extends TestCase
      */
     public function testMatchingInjectsRouteIntoAuraRouter()
     {
-        $route  = new Route('/foo', 'foo', [RequestMethod::METHOD_GET]);
+        $route  = new Route('/foo', $this->getMiddleware(), [RequestMethod::METHOD_GET]);
         $router = $this->getRouter();
         $router->addRoute($route);
 
@@ -103,7 +109,7 @@ class AuraRouterTest extends TestCase
      */
     public function testUriGenerationInjectsRouteIntoAuraRouter()
     {
-        $route  = new Route('/foo', 'foo', [RequestMethod::METHOD_GET]);
+        $route  = new Route('/foo', $this->getMiddleware(), [RequestMethod::METHOD_GET]);
         $router = $this->getRouter();
         $router->addRoute($route);
 
@@ -121,7 +127,7 @@ class AuraRouterTest extends TestCase
 
     public function testCanSpecifyAuraRouteTokensViaRouteOptions()
     {
-        $route = new Route('/foo', 'foo', [RequestMethod::METHOD_GET]);
+        $route = new Route('/foo', $this->getMiddleware(), [RequestMethod::METHOD_GET]);
         $route->setOptions(['tokens' => ['foo' => 'bar']]);
 
         $auraRoute = new AuraRoute();
@@ -142,7 +148,7 @@ class AuraRouterTest extends TestCase
 
     public function testCanSpecifyAuraRouteValuesViaRouteOptions()
     {
-        $route = new Route('/foo', 'foo', [RequestMethod::METHOD_GET]);
+        $route = new Route('/foo', $this->getMiddleware(), [RequestMethod::METHOD_GET]);
         $route->setOptions(['values' => ['foo' => 'bar']]);
 
         $auraRoute = new AuraRoute();
@@ -163,7 +169,7 @@ class AuraRouterTest extends TestCase
 
     public function testCanSpecifyAuraRouteWildcardViaRouteOptions()
     {
-        $route = new Route('/foo', 'foo', [RequestMethod::METHOD_GET]);
+        $route = new Route('/foo', $this->getMiddleware(), [RequestMethod::METHOD_GET]);
         $route->setOptions(['wildcard' => 'card']);
 
         $auraRoute = new AuraRoute();
@@ -205,13 +211,14 @@ class AuraRouterTest extends TestCase
 
         $this->auraMatcher->match($request)->willReturn($auraRoute);
 
+        $middleware = $this->getMiddleware();
         $router = $this->getRouter();
-        $router->addRoute(new Route('/foo', 'foo', [RequestMethod::METHOD_GET], '/foo'));
+        $router->addRoute(new Route('/foo', $middleware, [RequestMethod::METHOD_GET], '/foo'));
         $result = $router->match($request->reveal());
         $this->assertInstanceOf(RouteResult::class, $result);
         $this->assertTrue($result->isSuccess());
-        $this->assertEquals('/foo', $result->getMatchedRouteName());
-        $this->assertEquals('foo', $result->getMatchedMiddleware());
+        $this->assertSame('/foo', $result->getMatchedRouteName());
+        $this->assertSame($middleware, $result->getMatchedMiddleware());
         $this->assertSame([
             'action' => 'foo',
             'bar'    => 'baz',
@@ -272,10 +279,10 @@ class AuraRouterTest extends TestCase
     public function testCanGenerateUriFromRoutes()
     {
         $router = new AuraRouter();
-        $route1 = new Route('/foo', 'foo', [RequestMethod::METHOD_POST], 'foo-create');
-        $route2 = new Route('/foo', 'foo', [RequestMethod::METHOD_GET], 'foo-list');
-        $route3 = new Route('/foo/{id}', 'foo', [RequestMethod::METHOD_GET], 'foo');
-        $route4 = new Route('/bar/{baz}', 'bar', Route::HTTP_METHOD_ANY, 'bar');
+        $route1 = new Route('/foo', $this->getMiddleware(), [RequestMethod::METHOD_POST], 'foo-create');
+        $route2 = new Route('/foo', $this->getMiddleware(), [RequestMethod::METHOD_GET], 'foo-list');
+        $route3 = new Route('/foo/{id}', $this->getMiddleware(), [RequestMethod::METHOD_GET], 'foo');
+        $route4 = new Route('/bar/{baz}', $this->getMiddleware(), Route::HTTP_METHOD_ANY, 'bar');
 
         $router->addRoute($route1);
         $router->addRoute($route2);
@@ -318,7 +325,7 @@ class AuraRouterTest extends TestCase
     public function testGeneratedUriIsNotEncoded()
     {
         $router = new AuraRouter();
-        $route  = new Route('/foo/{id}', 'foo', [RequestMethod::METHOD_GET], 'foo');
+        $route  = new Route('/foo/{id}', $this->getMiddleware(), [RequestMethod::METHOD_GET], 'foo');
 
         $router->addRoute($route);
 
@@ -330,7 +337,7 @@ class AuraRouterTest extends TestCase
 
     public function testSuccessfulRouteResultComposesMatchedRoute()
     {
-        $route = new Route('/foo', 'foo', [RequestMethod::METHOD_GET]);
+        $route = new Route('/foo', $this->getMiddleware(), [RequestMethod::METHOD_GET]);
 
         $uri = $this->prophesize(UriInterface::class);
         $uri->getPath()->willReturn('/foo');
@@ -377,7 +384,7 @@ class AuraRouterTest extends TestCase
         // Not mocking the router container or Aura\Route; this particular test
         // is testing how the parts integrate.
         $router = new AuraRouter();
-        $route  = new Route('/foo', 'foo', [RequestMethod::METHOD_POST]);
+        $route  = new Route('/foo', $this->getMiddleware(), [RequestMethod::METHOD_POST]);
         $router->addRoute($route);
 
         $result = $router->match($request->reveal());
@@ -401,8 +408,8 @@ class AuraRouterTest extends TestCase
         // Not mocking the router container or Aura\Route; this particular test
         // is testing how the parts integrate.
         $router = new AuraRouter();
-        $router->addRoute(new Route('/foo', 'foo', [RequestMethod::METHOD_GET]));
-        $router->addRoute(new Route('/foo', 'bar', [RequestMethod::METHOD_POST]));
+        $router->addRoute(new Route('/foo', $this->getMiddleware(), [RequestMethod::METHOD_GET]));
+        $router->addRoute(new Route('/foo', $this->getMiddleware(), [RequestMethod::METHOD_POST]));
 
         $result = $router->match($request->reveal());
         $this->assertInstanceOf(RouteResult::class, $result);
@@ -423,8 +430,8 @@ class AuraRouterTest extends TestCase
         // Not mocking the router container or Aura\Route; this particular test
         // is testing how the parts integrate.
         $router = new AuraRouter();
-        $router->addRoute(new Route('/', 'foo', [RequestMethod::METHOD_GET]));
-        $router->addRoute(new Route('/bar', 'bar', [RequestMethod::METHOD_GET]));
+        $router->addRoute(new Route('/', $this->getMiddleware(), [RequestMethod::METHOD_GET]));
+        $router->addRoute(new Route('/bar', $this->getMiddleware(), [RequestMethod::METHOD_GET]));
 
         $result = $router->match($request->reveal());
         $this->assertInstanceOf(RouteResult::class, $result);
@@ -445,7 +452,7 @@ class AuraRouterTest extends TestCase
         // Not mocking the router container or Aura\Route; this particular test
         // is testing how the parts integrate.
         $router = new AuraRouter();
-        $router->addRoute(new Route('/foo', 'foo', []));
+        $router->addRoute(new Route('/foo', $this->getMiddleware(), []));
 
         $result = $router->match($request->reveal());
         $this->assertInstanceOf(RouteResult::class, $result);
@@ -485,7 +492,7 @@ class AuraRouterTest extends TestCase
         // Not mocking the router container or Aura\Route; this particular test
         // is testing how the parts integrate.
         $router = new AuraRouter();
-        $router->addRoute(new Route('/foo', 'foo', Route::HTTP_METHOD_ANY));
+        $router->addRoute(new Route('/foo', $this->getMiddleware(), Route::HTTP_METHOD_ANY));
 
         $result = $router->match($request->reveal());
         $this->assertInstanceOf(RouteResult::class, $result);
