@@ -250,6 +250,9 @@ class AuraRouterTest extends TestCase
         $this->assertSame([RequestMethod::METHOD_POST], $result->getAllowedMethods());
     }
 
+    /**
+     * @group failure
+     */
     public function testMatchFailureNotDueToHttpMethodReturnsGenericRouteFailureResult()
     {
         $uri = $this->prophesize(UriInterface::class);
@@ -271,7 +274,7 @@ class AuraRouterTest extends TestCase
         $this->assertInstanceOf(RouteResult::class, $result);
         $this->assertTrue($result->isFailure());
         $this->assertFalse($result->isMethodFailure());
-        $this->assertSame([], $result->getAllowedMethods());
+        $this->assertSame(['*'], $result->getAllowedMethods());
     }
 
     /**
@@ -297,6 +300,7 @@ class AuraRouterTest extends TestCase
     }
 
     /**
+     * @group failure
      * @group 85
      */
     public function testReturns404ResultIfAuraReturnsNullForFailedRoute()
@@ -317,7 +321,7 @@ class AuraRouterTest extends TestCase
         $this->assertInstanceOf(RouteResult::class, $result);
         $this->assertTrue($result->isFailure());
         $this->assertFalse($result->isMethodFailure());
-        $this->assertSame([], $result->getAllowedMethods());
+        $this->assertSame(['*'], $result->getAllowedMethods());
     }
 
     /**

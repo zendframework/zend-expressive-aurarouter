@@ -126,15 +126,18 @@ class AuraRouter implements RouterInterface
      * If the route failure is due to the HTTP method, passes the allowed
      * methods when creating the result.
      */
-    private function marshalFailedRoute(Request $request, AuraRoute $failedRoute = null) : RouteResult
-    {
+    private function marshalFailedRoute(
+        Request $request,
+        AuraRoute $failedRoute = null,
+        bool $acceptsAnyMethod = false
+    ) : RouteResult {
         // Evidently, getFailedRoute() can sometimes return null; these are 404
         // conditions. Additionally, if the failure is due to inability to
         // match the path, that to is a 404 condition.
         if (null === $failedRoute
             || $failedRoute->failedRule === PathRule::class
         ) {
-            return RouteResult::fromRouteFailure();
+            return RouteResult::fromRouteFailure(Route::HTTP_METHOD_ANY);
         }
 
         // Allow HEAD and OPTIONS requests if the failed route matches the path
@@ -156,6 +159,13 @@ class AuraRouter implements RouterInterface
             && ! in_array($request->getMethod(), $failedRoute->allows)
         ) {
             return RouteResult::fromRouteFailure($failedRoute->allows);
+        }
+
+        // Determine if the failed route allows ALL or NO HTTP methods
+        if ([] === $failedRoute->allows
+            && ! $this->matchAuraRouteToRoute($failedRoute)
+        ) {
+            return RouteResult::fromRouteFailure(Route::HTTP_METHOD_ANY);
         }
 
         return RouteResult::fromRouteFailure();
