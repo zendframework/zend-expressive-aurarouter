@@ -64,8 +64,6 @@ class AuraRouter implements RouterInterface
      * If no Aura.Router instance is provided, the constructor will lazy-load
      * an instance. If you need to customize the Aura.Router instance in any
      * way, you MUST inject it yourself.
-     *
-     * @param null|Router $router
      */
     public function __construct(Router $router = null)
     {
@@ -76,18 +74,12 @@ class AuraRouter implements RouterInterface
         $this->router = $router;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function addRoute(Route $route)
+    public function addRoute(Route $route) : void
     {
         $this->routesToInject[] = $route;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function match(Request $request)
+    public function match(Request $request) : RouteResult
     {
         // Must inject routes prior to matching.
         $this->injectRoutes();
@@ -111,10 +103,7 @@ class AuraRouter implements RouterInterface
         return $this->marshalMatchedRoute($route);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function generateUri($name, array $substitutions = [], array $options = [])
+    public function generateUri(string $name, array $substitutions = [], array $options = []) : string
     {
         // Must inject routes prior to generating URIs.
         $this->injectRoutes();
@@ -124,10 +113,8 @@ class AuraRouter implements RouterInterface
 
     /**
      * Create a default Aura router instance
-     *
-     * @return Router
      */
-    private function createRouter()
+    private function createRouter() : Router
     {
         return new Router();
     }
@@ -137,12 +124,8 @@ class AuraRouter implements RouterInterface
      *
      * If the route failure is due to the HTTP method, passes the allowed
      * methods when creating the result.
-     *
-     * @param Request $request
-     * @param null|AuraRoute $failedRoute
-     * @return RouteResult
      */
-    private function marshalFailedRoute(Request $request, AuraRoute $failedRoute = null)
+    private function marshalFailedRoute(Request $request, AuraRoute $failedRoute = null) : RouteResult
     {
         // Evidently, getFailedRoute() can sometimes return null; these are 404
         // conditions. Additionally, if the failure is due to inability to
@@ -160,7 +143,7 @@ class AuraRouter implements RouterInterface
 
         // Check to see if we have an entry in the method path map; if so,
         // register a 405 using that value.
-        list($path) = explode('^', $failedRoute->name);
+        [$path] = explode('^', (string) $failedRoute->name);
         if (array_key_exists($path, $this->pathMethodMap)) {
             return RouteResult::fromRouteFailure($this->pathMethodMap[$path]);
         }
@@ -179,11 +162,8 @@ class AuraRouter implements RouterInterface
 
     /**
      * Marshals a route result based on the matched AuraRoute and request method.
-     *
-     * @param AuraRoute $auraRoute
-     * @return RouteResult
      */
-    private function marshalMatchedRoute(AuraRoute $auraRoute)
+    private function marshalMatchedRoute(AuraRoute $auraRoute) : RouteResult
     {
         $route = $this->matchAuraRouteToRoute($auraRoute);
         if (! $route) {
@@ -197,7 +177,7 @@ class AuraRouter implements RouterInterface
     /**
      * Loops through any un-injected routes and injects them into the Aura.Router instance.
      */
-    private function injectRoutes()
+    private function injectRoutes() : void
     {
         foreach ($this->routesToInject as $index => $route) {
             $this->injectRoute($route);
@@ -208,10 +188,8 @@ class AuraRouter implements RouterInterface
 
     /**
      * Inject a route into the underlying Aura.Router instance.
-     *
-     * @param Route $route
      */
-    private function injectRoute(Route $route)
+    private function injectRoute(Route $route) : void
     {
         $path = $route->getPath();
 
@@ -289,12 +267,8 @@ class AuraRouter implements RouterInterface
      *
      * Otherwise, it marshals a failed route result (contingent on implicit
      * support for HEAD and OPTIONS).
-     *
-     * @param AuraRoute $auraRoute
-     * @param Request $request
-     * @return RouteResult
      */
-    private function handleRouteWithUndefinedHttpMethods(AuraRoute $auraRoute, Request $request)
+    private function handleRouteWithUndefinedHttpMethods(AuraRoute $auraRoute, Request $request) : RouteResult
     {
         $route = $this->matchAuraRouteToRoute($auraRoute);
         if (! $route) {
