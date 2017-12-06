@@ -31,7 +31,7 @@ class AuraRouter implements RouterInterface
     /**
      * Implicit HTTP methods (should work for any route)
      */
-    const HTTP_METHODS_IMPLICIT = [
+    public const HTTP_METHODS_IMPLICIT = [
         RequestMethod::METHOD_HEAD,
         RequestMethod::METHOD_OPTIONS,
     ];
