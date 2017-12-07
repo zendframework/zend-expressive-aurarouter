@@ -545,7 +545,7 @@ class AuraRouterTest extends TestCase
             'bar'    => 'baz',
         ]);
 
-        $this->auraMatcher->match($request)->willReturn($auraRoute);
+        $this->auraMatcher->match($request->reveal())->willReturn($auraRoute)->shouldBeCalled();
 
         $router = $this->getRouter();
 
