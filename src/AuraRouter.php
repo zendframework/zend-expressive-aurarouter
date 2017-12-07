@@ -168,7 +168,7 @@ class AuraRouter implements RouterInterface
             return RouteResult::fromRouteFailure(Route::HTTP_METHOD_ANY);
         }
 
-        return RouteResult::fromRouteFailure();
+        return RouteResult::fromRouteFailure($failedRoute->allows ?: []);
     }
 
     /**
@@ -179,7 +179,7 @@ class AuraRouter implements RouterInterface
         $route = $this->matchAuraRouteToRoute($auraRoute);
         if (! $route) {
             // This should likely never occur, but is present for completeness.
-            return RouteResult::fromRouteFailure();
+            return RouteResult::fromRouteFailure(Route::HTTP_METHOD_ANY);
         }
 
         return RouteResult::fromRoute($route, $auraRoute->attributes);

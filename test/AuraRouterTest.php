@@ -503,4 +503,57 @@ class AuraRouterTest extends TestCase
         $this->assertInstanceOf(RouteResult::class, $result);
         $this->assertTrue($result->isSuccess(), 'Routing failed, but should have succeeded');
     }
+
+    public function testFailedRoutingDueToUnknownCausesResultsInFailureRouteNotDueToMethod()
+    {
+        $uri = $this->prophesize(UriInterface::class);
+        $uri->getPath()->willReturn('/bar');
+
+        $request = $this->prophesize(ServerRequestInterface::class);
+        $request->getUri()->willReturn($uri);
+        $request->getMethod()->willReturn(RequestMethod::METHOD_GET);
+        $request->getServerParams()->willReturn([]);
+
+        // Not mocking the router container or Aura\Route; this particular test
+        // is testing how the parts integrate.
+        $router = new AuraRouter();
+        $router->addRoute(new Route('/foo', $this->getMiddleware(), []));
+
+        $result = $router->match($request->reveal());
+        $this->assertInstanceOf(RouteResult::class, $result);
+        $this->assertTrue($result->isFailure(), 'Routing did not fail, but should have');
+        $this->assertFalse($result->isMethodFailure(), 'Failure was due to HTTP method, but should NOT have been');
+    }
+
+    public function testReturnsRouteFailureForRouteInjectedManuallyIntoBaseRouterButNotRouterBridge()
+    {
+        $uri = $this->prophesize(UriInterface::class);
+        $uri->getPath()->willReturn('/foo');
+
+        $request = $this->prophesize(ServerRequestInterface::class);
+        $request->getUri()->willReturn($uri);
+        $request->getMethod()->willReturn(RequestMethod::METHOD_GET);
+        $request->getServerParams()->willReturn([]);
+
+        $auraRoute = new AuraRoute();
+        $auraRoute->name('/foo');
+        $auraRoute->path('/foo');
+        $auraRoute->handler('foo');
+        $auraRoute->allows([RequestMethod::METHOD_GET]);
+        $auraRoute->attributes([
+            'action' => 'foo',
+            'bar'    => 'baz',
+        ]);
+
+        $this->auraMatcher->match($request)->willReturn($auraRoute);
+
+        $middleware = $this->getMiddleware();
+        $router = $this->getRouter();
+
+        $result = $router->match($request->reveal());
+
+        $this->assertInstanceOf(RouteResult::class, $result);
+        $this->assertTrue($result->isFailure());
+        $this->assertFalse($result->isMethodFailure());
+    }
 }
