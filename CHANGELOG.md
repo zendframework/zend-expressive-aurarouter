@@ -6,7 +6,8 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Added
 
-- [#26](https://github.com/zendframework/zend-expressive-aurarouter/pull/26) adds
+- [#26](https://github.com/zendframework/zend-expressive-aurarouter/pull/26) and
+  [#31](https://github.com/zendframework/zend-expressive-aurarouter/pull/31) adds
   support for the zend-expressive-router 3.0 series.
 
 ### Changed
