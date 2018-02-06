@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace ZendTest\Expressive\Router\AuraRouter;
 
 use PHPUnit\Framework\TestCase;
+use Zend\Expressive\Router\AuraRouter;
 use Zend\Expressive\Router\AuraRouter\ConfigProvider;
 use Zend\Expressive\Router\RouterInterface;
 
@@ -40,8 +41,13 @@ class ConfigProviderTest extends TestCase
     {
         $this->assertArrayHasKey('dependencies', $config);
         $this->assertInternalType('array', $config['dependencies']);
-        $this->assertArrayHasKey('factories', $config['dependencies']);
-        $this->assertInternalType('array', $config['dependencies']['factories']);
-        $this->assertArrayHasKey(RouterInterface::class, $config['dependencies']['factories']);
+
+        $this->assertArrayHasKey('aliases', $config['dependencies']);
+        $this->assertInternalType('array', $config['dependencies']['aliases']);
+        $this->assertArrayHasKey(RouterInterface::class, $config['dependencies']['aliases']);
+
+        $this->assertArrayHasKey('invokables', $config['dependencies']);
+        $this->assertInternalType('array', $config['dependencies']['invokables']);
+        $this->assertArrayHasKey(AuraRouter::class, $config['dependencies']['invokables']);
     }
 }
