@@ -28,7 +28,7 @@ class ConfigProviderTest extends TestCase
     public function testInvocationReturnsArray() : array
     {
         $config = ($this->provider)();
-        self::assertInternalType('array', $config);
+        $this->assertInternalType('array', $config);
 
         return $config;
     }
@@ -38,10 +38,10 @@ class ConfigProviderTest extends TestCase
      */
     public function testReturnedArrayContainsDependencies(array $config) : void
     {
-        self::assertArrayHasKey('dependencies', $config);
-        self::assertInternalType('array', $config['dependencies']);
-        self::assertArrayHasKey('factories', $config['dependencies']);
-        self::assertInternalType('array', $config['dependencies']['factories']);
-        self::assertArrayHasKey(RouterInterface::class, $config['dependencies']['factories']);
+        $this->assertArrayHasKey('dependencies', $config);
+        $this->assertInternalType('array', $config['dependencies']);
+        $this->assertArrayHasKey('factories', $config['dependencies']);
+        $this->assertInternalType('array', $config['dependencies']['factories']);
+        $this->assertArrayHasKey(RouterInterface::class, $config['dependencies']['factories']);
     }
 }
