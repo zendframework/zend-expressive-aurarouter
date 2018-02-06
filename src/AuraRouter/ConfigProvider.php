@@ -24,8 +24,11 @@ class ConfigProvider
     public function getDependencies() : array
     {
         return [
-            'factories' => [
+            'aliases' => [
                 RouterInterface::class => AuraRouter::class,
+            ],
+            'invokables' => [
+                AuraRouter::class => AuraRouter::class,
             ],
         ];
     }

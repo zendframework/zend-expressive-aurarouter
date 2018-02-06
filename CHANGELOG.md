@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 3.0.0alpha2 - 2018-02-06
+
+### Added
+
+- Nothing.
+
+### Changed
+
+- Nothing.
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- Fixes the `ConfigProvider` to alias `Zend\Expressive\Router\RouterInterface`
+  to `Zend\Expressive\Router\AuraRouter`, and to define the latter as an
+  invokable.
+
 ## 3.0.0alpha1 - 2018-02-06
 
 ### Added
