@@ -7,10 +7,10 @@
 
 declare(strict_types=1);
 
-namespace ZendTest\Expressive\Router;
+namespace ZendTest\Expressive\Router\AuraRouter;
 
 use PHPUnit\Framework\TestCase;
-use Zend\Expressive\Router\ConfigProvider;
+use Zend\Expressive\Router\AuraRouter\ConfigProvider;
 use Zend\Expressive\Router\RouterInterface;
 
 class ConfigProviderTest extends TestCase
