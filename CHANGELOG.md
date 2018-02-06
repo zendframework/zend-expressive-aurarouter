@@ -10,6 +10,10 @@ All notable changes to this project will be documented in this file, in reverse 
   [#31](https://github.com/zendframework/zend-expressive-aurarouter/pull/31) adds
   support for the zend-expressive-router 3.0 series.
 
+- [#30](https://github.com/zendframework/zend-expressive-aurarouter/pull/30)
+  adds the class `Zend\Expressive\Router\AuraRouter\ConfigProvider`, and exposes
+  it in the `composer.json` as a `config-provider`.
+
 ### Changed
 
 - Nothing.
