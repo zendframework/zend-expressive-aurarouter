@@ -13,7 +13,10 @@ use Aura\Router\Route as AuraRoute;
 use Aura\Router\RouterContainer as Router;
 use Aura\Router\Rule\Path as PathRule;
 use Fig\Http\Message\RequestMethodInterface as RequestMethod;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
 /**
  * Router implementation bridging the Aura.Router.
@@ -140,14 +143,24 @@ class AuraRouter implements RouterInterface
             return RouteResult::fromRouteFailure(Route::HTTP_METHOD_ANY);
         }
 
+        [$path] = explode('^', (string) $failedRoute->name);
         // Allow HEAD and OPTIONS requests if the failed route matches the path
         if (in_array($request->getMethod(), self::HTTP_METHODS_IMPLICIT, true)) {
-            return $this->marshalMatchedRoute($failedRoute);
+            return RouteResult::fromRoute(new Route(
+                $path,
+                new class () implements MiddlewareInterface {
+                    public function process(Request $request, RequestHandlerInterface $handler) : ResponseInterface
+                    {
+                        throw new \Exception('This middleware should not be called.');
+                    }
+                },
+                $this->pathMethodMap[$path]
+            ));
         }
 
         // Check to see if we have an entry in the method path map; if so,
         // register a 405 using that value.
-        [$path] = explode('^', (string) $failedRoute->name);
+
         if (array_key_exists($path, $this->pathMethodMap)) {
             return RouteResult::fromRouteFailure($this->pathMethodMap[$path]);
         }
