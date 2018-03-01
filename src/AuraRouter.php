@@ -13,10 +13,7 @@ use Aura\Router\Route as AuraRoute;
 use Aura\Router\RouterContainer as Router;
 use Aura\Router\Rule\Path as PathRule;
 use Fig\Http\Message\RequestMethodInterface as RequestMethod;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface as Request;
-use Psr\Http\Server\MiddlewareInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 
 /**
  * Router implementation bridging the Aura.Router.
