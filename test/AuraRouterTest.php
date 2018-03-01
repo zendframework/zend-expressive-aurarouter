@@ -219,7 +219,7 @@ class AuraRouterTest extends TestCase
         $this->assertInstanceOf(RouteResult::class, $result);
         $this->assertTrue($result->isSuccess());
         $this->assertSame('/foo', $result->getMatchedRouteName());
-        $this->assertSame($middleware, $result->getMatchedMiddleware());
+        $this->assertSame($middleware, $result->getMatchedRoute()->getMiddleware());
         $this->assertSame([
             'action' => 'foo',
             'bar'    => 'baz',
