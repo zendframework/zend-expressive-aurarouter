@@ -394,11 +394,9 @@ class AuraRouterTest extends TestCase
 
         $result = $router->match($request->reveal());
         $this->assertInstanceOf(RouteResult::class, $result);
-        $this->assertTrue($result->isSuccess());
-
-        $matched = $result->getMatchedRoute();
-        $this->assertInstanceOf(Route::class, $matched);
-        $this->assertSame(['POST'], $matched->getAllowedMethods());
+        $this->assertFalse($result->isSuccess());
+        $this->assertFalse($result->getMatchedRoute());
+        $this->assertSame(['POST'], $result->getAllowedMethods());
     }
 
     public function testMethodFailureWhenMultipleRoutesUseSamePathShouldResultIn405ListingAllAllowedMethods()

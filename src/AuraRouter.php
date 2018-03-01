@@ -146,16 +146,7 @@ class AuraRouter implements RouterInterface
         [$path] = explode('^', (string) $failedRoute->name);
         // Allow HEAD and OPTIONS requests if the failed route matches the path
         if (in_array($request->getMethod(), self::HTTP_METHODS_IMPLICIT, true)) {
-            return RouteResult::fromRoute(new Route(
-                $path,
-                new class () implements MiddlewareInterface {
-                    public function process(Request $request, RequestHandlerInterface $handler) : ResponseInterface
-                    {
-                        throw new \Exception('This middleware should not be called.');
-                    }
-                },
-                $this->pathMethodMap[$path]
-            ));
+            return RouteResult::fromRouteFailure($this->pathMethodMap[$path]);
         }
 
         // Check to see if we have an entry in the method path map; if so,
