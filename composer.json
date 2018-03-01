@@ -20,17 +20,24 @@
         "slack": "https://zendframework-slack.herokuapp.com",
         "forum": "https://discourse.zendframework.com/c/questions/expressive"
     },
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/webimpress/zend-expressive-router"
+        }
+    ],
     "require": {
         "php": "^7.1",
         "aura/router": "^3.1",
         "fig/http-message-util": "^1.1.2",
         "psr/http-message": "^1.0.1",
-        "zendframework/zend-expressive-router": "^3.0.0alpha1 || ^3.0"
+        "zendframework/zend-expressive-router": "dev-hotfix/options-request"
     },
     "require-dev": {
         "malukenho/docheader": "^0.1.6",
-        "phpunit/phpunit": "^6.5.3",
-        "zendframework/zend-coding-standard": "~1.0.0"
+        "phpunit/phpunit": "^7.0.2",
+        "zendframework/zend-coding-standard": "~1.0.0",
+        "zendframework/zend-diactoros": "^1.7"
     },
     "autoload": {
         "psr-4": {
@@ -39,7 +46,10 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "ZendTest\\Expressive\\Router\\": "test/"
+            "ZendTest\\Expressive\\Router\\": [
+                "test/",
+                "vendor/zendframework/zend-expressive-router/test/"
+            ]
         }
     },
     "config": {
