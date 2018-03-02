@@ -140,6 +140,13 @@ class AuraRouter implements RouterInterface
             return RouteResult::fromRouteFailure(Route::HTTP_METHOD_ANY);
         }
 
+        // Allow HEAD request if the failed route allows GET
+        if ($request->getMethod() === RequestMethod::METHOD_HEAD
+            && in_array(RequestMethod::METHOD_GET, $failedRoute->allows, true)
+        ) {
+            return $this->marshalMatchedRoute($failedRoute);
+        }
+
         [$path] = explode('^', (string) $failedRoute->name);
         // Allow HEAD and OPTIONS requests if the failed route matches the path
         if (in_array($request->getMethod(), self::HTTP_METHODS_IMPLICIT, true)) {
