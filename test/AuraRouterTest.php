@@ -320,7 +320,7 @@ class AuraRouterTest extends TestCase
         $result = $router->match($request->reveal());
         $this->assertInstanceOf(RouteResult::class, $result);
         $this->assertTrue($result->isFailure());
-        $this->assertTrue($result->isMethodFailure());
+        $this->assertFalse($result->isMethodFailure());
         $this->assertSame(['*'], $result->getAllowedMethods());
     }
 
@@ -440,7 +440,7 @@ class AuraRouterTest extends TestCase
         $result = $router->match($request->reveal());
         $this->assertInstanceOf(RouteResult::class, $result);
         $this->assertTrue($result->isFailure());
-        $this->assertTrue($result->isMethodFailure());
+        $this->assertFalse($result->isMethodFailure());
     }
 
     public function testMatchWhenNoHttpMethodsPresentShouldResultInRoutingFailure()
@@ -521,7 +521,7 @@ class AuraRouterTest extends TestCase
         $result = $router->match($request->reveal());
         $this->assertInstanceOf(RouteResult::class, $result);
         $this->assertTrue($result->isFailure(), 'Routing did not fail, but should have');
-        $this->assertTrue($result->isMethodFailure());
+        $this->assertFalse($result->isMethodFailure());
     }
 
     public function testReturnsRouteFailureForRouteInjectedManuallyIntoBaseRouterButNotRouterBridge()

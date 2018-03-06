@@ -128,7 +128,7 @@ class AuraRouter implements RouterInterface
         if (null === $failedRoute
             || $failedRoute->failedRule === PathRule::class
         ) {
-            return RouteResult::fromRouteFailure([]);
+            return RouteResult::fromRouteFailure(Route::HTTP_METHOD_ANY);
         }
 
         // Check to see if we have an entry in the method path map; if so,
