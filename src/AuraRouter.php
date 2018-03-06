@@ -30,14 +30,6 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class AuraRouter implements RouterInterface
 {
     /**
-     * Implicit HTTP methods (should work for any route)
-     */
-    public const HTTP_METHODS_IMPLICIT = [
-        RequestMethod::METHOD_HEAD,
-        RequestMethod::METHOD_OPTIONS,
-    ];
-
-    /**
      * Map paths to allowed HTTP methods.
      *
      * @var array
@@ -128,8 +120,7 @@ class AuraRouter implements RouterInterface
      */
     private function marshalFailedRoute(
         Request $request,
-        AuraRoute $failedRoute = null,
-        bool $acceptsAnyMethod = false
+        AuraRoute $failedRoute = null
     ) : RouteResult {
         // Evidently, getFailedRoute() can sometimes return null; these are 404
         // conditions. Additionally, if the failure is due to inability to
@@ -137,25 +128,12 @@ class AuraRouter implements RouterInterface
         if (null === $failedRoute
             || $failedRoute->failedRule === PathRule::class
         ) {
-            return RouteResult::fromRouteFailure(Route::HTTP_METHOD_ANY);
-        }
-
-        // Allow HEAD request if the failed route allows GET
-        if ($request->getMethod() === RequestMethod::METHOD_HEAD
-            && in_array(RequestMethod::METHOD_GET, $failedRoute->allows, true)
-        ) {
-            return $this->marshalMatchedRoute($failedRoute);
-        }
-
-        [$path] = explode('^', (string) $failedRoute->name);
-        // Allow HEAD and OPTIONS requests if the failed route matches the path
-        if (in_array($request->getMethod(), self::HTTP_METHODS_IMPLICIT, true)) {
-            return RouteResult::fromRouteFailure($this->pathMethodMap[$path]);
+            return RouteResult::fromRouteFailure([]);
         }
 
         // Check to see if we have an entry in the method path map; if so,
         // register a 405 using that value.
-
+        [$path] = explode('^', (string) $failedRoute->name);
         if (array_key_exists($path, $this->pathMethodMap)) {
             return RouteResult::fromRouteFailure($this->pathMethodMap[$path]);
         }

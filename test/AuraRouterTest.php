@@ -320,7 +320,7 @@ class AuraRouterTest extends TestCase
         $result = $router->match($request->reveal());
         $this->assertInstanceOf(RouteResult::class, $result);
         $this->assertTrue($result->isFailure());
-        $this->assertFalse($result->isMethodFailure());
+        $this->assertTrue($result->isMethodFailure());
         $this->assertSame(['*'], $result->getAllowedMethods());
     }
 
@@ -421,7 +421,7 @@ class AuraRouterTest extends TestCase
         $this->assertEquals([RequestMethod::METHOD_GET, RequestMethod::METHOD_POST], $result->getAllowedMethods());
     }
 
-    public function testFailureToMatchSubpathWhenRootPathRouteIsPresentShouldResultIn404()
+    public function testFailureToMatchSubpathWhenRootPathRouteIsPresentShouldResultIn405()
     {
         $uri = $this->prophesize(UriInterface::class);
         $uri->getPath()->willReturn('/foo');
@@ -440,7 +440,7 @@ class AuraRouterTest extends TestCase
         $result = $router->match($request->reveal());
         $this->assertInstanceOf(RouteResult::class, $result);
         $this->assertTrue($result->isFailure());
-        $this->assertFalse($result->isMethodFailure());
+        $this->assertTrue($result->isMethodFailure());
     }
 
     public function testMatchWhenNoHttpMethodsPresentShouldResultInRoutingFailure()
@@ -521,7 +521,7 @@ class AuraRouterTest extends TestCase
         $result = $router->match($request->reveal());
         $this->assertInstanceOf(RouteResult::class, $result);
         $this->assertTrue($result->isFailure(), 'Routing did not fail, but should have');
-        $this->assertFalse($result->isMethodFailure(), 'Failure was due to HTTP method, but should NOT have been');
+        $this->assertTrue($result->isMethodFailure());
     }
 
     public function testReturnsRouteFailureForRouteInjectedManuallyIntoBaseRouterButNotRouterBridge()
