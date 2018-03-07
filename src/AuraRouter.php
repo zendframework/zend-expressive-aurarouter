@@ -146,14 +146,7 @@ class AuraRouter implements RouterInterface
             return RouteResult::fromRouteFailure($failedRoute->allows);
         }
 
-        // Determine if the failed route allows ALL or NO HTTP methods
-        if ([] === $failedRoute->allows
-            && ! $this->matchAuraRouteToRoute($failedRoute)
-        ) {
-            return RouteResult::fromRouteFailure(Route::HTTP_METHOD_ANY);
-        }
-
-        return RouteResult::fromRouteFailure($failedRoute->allows ?: []);
+        return RouteResult::fromRouteFailure($failedRoute->allows ?: Route::HTTP_METHOD_ANY);
     }
 
     /**

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "3377db6aa705d581be440eae3f9e6845",
+    "content-hash": "dccc6c98fa8703f365f1ea4692fcaeff",
     "packages": [
         {
             "name": "aura/router",
@@ -359,16 +359,16 @@
         },
         {
             "name": "zendframework/zend-expressive-router",
-            "version": "3.0.0rc2",
+            "version": "3.0.0rc4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/zendframework/zend-expressive-router.git",
-                "reference": "97ea9940c72222586e832913529b097ddcc0b2e4"
+                "reference": "3b21fb4e1b568bfa8b0ae699b6f0bdd5d5644863"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zendframework/zend-expressive-router/zipball/97ea9940c72222586e832913529b097ddcc0b2e4",
-                "reference": "97ea9940c72222586e832913529b097ddcc0b2e4",
+                "url": "https://api.github.com/repos/zendframework/zend-expressive-router/zipball/3b21fb4e1b568bfa8b0ae699b6f0bdd5d5644863",
+                "reference": "3b21fb4e1b568bfa8b0ae699b6f0bdd5d5644863",
                 "shasum": ""
             },
             "require": {
@@ -421,7 +421,7 @@
                 "zend-expressive",
                 "zf"
             ],
-            "time": "2018-03-06T22:42:26+00:00"
+            "time": "2018-03-07T16:56:58+00:00"
         }
     ],
     "packages-dev": [
