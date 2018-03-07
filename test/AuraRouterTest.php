@@ -443,28 +443,6 @@ class AuraRouterTest extends TestCase
         $this->assertFalse($result->isMethodFailure());
     }
 
-    public function testMatchWhenNoHttpMethodsPresentShouldResultInRoutingFailure()
-    {
-        $uri = $this->prophesize(UriInterface::class);
-        $uri->getPath()->willReturn('/foo');
-
-        $request = $this->prophesize(ServerRequestInterface::class);
-        $request->getUri()->willReturn($uri);
-        $request->getMethod()->willReturn(RequestMethod::METHOD_GET);
-        $request->getServerParams()->willReturn([]);
-
-        // Not mocking the router container or Aura\Route; this particular test
-        // is testing how the parts integrate.
-        $router = new AuraRouter();
-        $router->addRoute(new Route('/foo', $this->getMiddleware(), []));
-
-        $result = $router->match($request->reveal());
-        $this->assertInstanceOf(RouteResult::class, $result);
-        $this->assertTrue($result->isFailure(), 'Routing did not fail, but should have');
-        $this->assertTrue($result->isMethodFailure(), 'Failure was not due to HTTP method, but should have been');
-        $this->assertEquals([], $result->getAllowedMethods(), 'Allowed methods should have been empty, but was not');
-    }
-
     public function allHttpMethods()
     {
         return [
@@ -516,7 +494,7 @@ class AuraRouterTest extends TestCase
         // Not mocking the router container or Aura\Route; this particular test
         // is testing how the parts integrate.
         $router = new AuraRouter();
-        $router->addRoute(new Route('/foo', $this->getMiddleware(), []));
+        $router->addRoute(new Route('/foo', $this->getMiddleware(), [RequestMethod::METHOD_TRACE]));
 
         $result = $router->match($request->reveal());
         $this->assertInstanceOf(RouteResult::class, $result);
