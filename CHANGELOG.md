@@ -134,7 +134,7 @@ All notable changes to this project will be documented in this file, in reverse 
 
 - Nothing.
 
-## 2.2.0 - TBD
+## 2.2.0 - 2018-03-08
 
 ### Added
 
@@ -142,29 +142,8 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Changed
 
-- Nothing.
-
-### Deprecated
-
-- Nothing.
-
-### Removed
-
-- Nothing.
-
-### Fixed
-
-- Nothing.
-
-## 2.1.2 - TBD
-
-### Added
-
-- Nothing.
-
-### Changed
-
-- Nothing.
+- [#36](https://github.com/zendframework/zend-expressive-aurarouter/pull/36)
+  updates the minimum supported version of zend-expressive-router to 2.4.0.
 
 ### Deprecated
 

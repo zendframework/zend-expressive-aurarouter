@@ -51,6 +51,8 @@ class AuraRouterTest extends TestCase
         $this->auraRouterContainer->getMap()->willReturn($this->auraMap->reveal());
         $this->auraRouterContainer->getMatcher()->willReturn($this->auraMatcher->reveal());
         $this->auraRouterContainer->getGenerator()->willReturn($this->auraGenerator->reveal());
+
+        $this->middleware = $this->prophesize(MiddlewareInterface::class)->reveal();
     }
 
     private function getRouter() : AuraRouter
