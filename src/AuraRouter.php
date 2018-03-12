@@ -83,15 +83,6 @@ class AuraRouter implements RouterInterface
             return $this->marshalFailedRoute($request, $matcher->getFailedRoute());
         }
 
-        // The $allows property is empty if no HTTP methods were specified
-        // during route creation; such a situation is a (potential) 405.
-        // We have to retrieve the value first, because Aura\Route uses
-        // property overloading, which does not play well with empty().
-        $allows = $route->allows;
-        if (empty($allows)) {
-            return $this->handleRouteWithUndefinedHttpMethods($route, $request);
-        }
-
         return $this->marshalMatchedRoute($route);
     }
 
@@ -238,36 +229,5 @@ class AuraRouter implements RouterInterface
 
             return false;
         }, false);
-    }
-
-    /**
-     * Handle a route with undefined allowed HTTP methods.
-     *
-     * Aura\Route::$allows can be empty in one of two situations:
-     *
-     * - all HTTP methods are supported
-     * - no HTTP methods are supported
-     *
-     * These need to be handled differently, so this method attempts to retrieve
-     * the associated Zend\Expressive\Router\Route instance.
-     *
-     * If found, it checks to see if the route allows ANY HTTP method, and, if
-     * so, marshals a successful route result.
-     *
-     * Otherwise, it marshals a failed route result (contingent on implicit
-     * support for HEAD and OPTIONS).
-     */
-    private function handleRouteWithUndefinedHttpMethods(AuraRoute $auraRoute, Request $request) : RouteResult
-    {
-        $route = $this->matchAuraRouteToRoute($auraRoute);
-        if (! $route) {
-            return $this->marshalFailedRoute($request, $auraRoute);
-        }
-
-        if ($route->getAllowedMethods() === Route::HTTP_METHOD_ANY) {
-            return $this->marshalMatchedRoute($auraRoute);
-        }
-
-        return $this->marshalFailedRoute($request, $auraRoute);
     }
 }
