@@ -2,6 +2,138 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 3.0.0rc3 - 2018-03-07
+
+### Added
+
+- Nothing.
+
+### Changed
+
+- [#35](https://github.com/zendframework/zend-expressive-aurarouter/pull/35)
+  updates the minimum supported version of zend-expressive-router to 3.0.0rc4.
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- Nothing.
+
+## 3.0.0rc2 - 2018-03-06
+
+### Added
+
+- Nothing.
+
+### Changed
+
+- [#34](https://github.com/zendframework/zend-expressive-aurarouter/pull/34)
+  updates the minimum supported version of zend-expressive-router to 3.0.0rc2.
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- [#34](https://github.com/zendframework/zend-expressive-aurarouter/pull/34)
+  fixes how the `AuraRouter` marshals a `RouteResult` when the router detects
+  successful path-based matches and the current HTTP method is not supported,
+  ensuring that a correct list of allowed HTTP methods is generated for a route
+  result failure.
+
+## 3.0.0rc1 - 2018-03-05
+
+### Added
+
+- Nothing.
+
+### Changed
+
+- [#32](https://github.com/zendframework/zend-expressive-aurarouter/pull/32)
+  updates the package to pin to zend-expressive-router 3.0.0rc1 or later.
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- [#32](https://github.com/zendframework/zend-expressive-aurarouter/pull/32)
+  fixes an issue with how a failure result is marshaled when the path patches
+  but the request method does not. The package now correctly aggregates allowed
+  methods for the route result failure instance.
+
+## 3.0.0alpha2 - 2018-02-06
+
+### Added
+
+- Nothing.
+
+### Changed
+
+- Nothing.
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- Fixes the `ConfigProvider` to alias `Zend\Expressive\Router\RouterInterface`
+  to `Zend\Expressive\Router\AuraRouter`, and to define the latter as an
+  invokable.
+
+## 3.0.0 - 2018-03-15
+
+### Added
+
+- [#26](https://github.com/zendframework/zend-expressive-aurarouter/pull/26) and
+  [#31](https://github.com/zendframework/zend-expressive-aurarouter/pull/31) adds
+  support for the zend-expressive-router 3.0 series.
+
+- [#30](https://github.com/zendframework/zend-expressive-aurarouter/pull/30)
+  adds the class `Zend\Expressive\Router\AuraRouter\ConfigProvider`, and exposes
+  it in the `composer.json` as a `config-provider`.
+
+### Changed
+
+- Nothing.
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- [#26](https://github.com/zendframework/zend-expressive-aurarouter/pull/26)
+  removes support for the zend-expressive-router 2.0 series.
+
+- [#26](https://github.com/zendframework/zend-expressive-aurarouter/pull/26)
+  removes support for PHP 5.6 and PHP 7.0.
+
+### Fixed
+
+- Nothing.
+
 ## 2.2.0 - 2018-03-08
 
 ### Added

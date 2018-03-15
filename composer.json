@@ -21,16 +21,18 @@
         "forum": "https://discourse.zendframework.com/c/questions/expressive"
     },
     "require": {
-        "php": "^5.6 || ^7.0",
-        "aura/router": "^3.0.1",
+        "php": "^7.1",
+        "aura/router": "^3.1",
         "fig/http-message-util": "^1.1.2",
         "psr/http-message": "^1.0.1",
-        "zendframework/zend-expressive-router": "^2.4"
+        "zendframework/zend-expressive-router": "^3.0"
     },
     "require-dev": {
-        "malukenho/docheader": "^0.1.5",
-        "phpunit/phpunit": "^5.7.23 || ^6.4.3",
-        "zendframework/zend-coding-standard": "~1.0.0"
+        "malukenho/docheader": "^0.1.6",
+        "phpunit/phpunit": "^7.0.2",
+        "zendframework/zend-coding-standard": "~1.0.0",
+        "zendframework/zend-diactoros": "^1.7.1",
+        "zendframework/zend-stratigility": "^3.0"
     },
     "autoload": {
         "psr-4": {
@@ -47,8 +49,11 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "2.2.x-dev",
-            "dev-develop": "3.0.x-dev"
+            "dev-master": "3.0.x-dev",
+            "dev-develop": "3.1.x-dev"
+        },
+        "zf": {
+            "config-provider": "Zend\\Expressive\\Router\\AuraRouter\\ConfigProvider"
         }
     },
     "scripts": {
