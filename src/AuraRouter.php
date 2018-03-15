@@ -14,6 +14,13 @@ use Aura\Router\RouterContainer as Router;
 use Aura\Router\Rule\Path as PathRule;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
+use function array_key_exists;
+use function array_merge;
+use function array_reduce;
+use function array_unique;
+use function explode;
+use function in_array;
+
 /**
  * Router implementation bridging the Aura.Router.
  *
