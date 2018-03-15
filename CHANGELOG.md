@@ -102,7 +102,7 @@ All notable changes to this project will be documented in this file, in reverse 
   to `Zend\Expressive\Router\AuraRouter`, and to define the latter as an
   invokable.
 
-## 3.0.0alpha1 - 2018-02-06
+## 3.0.0 - 2018-03-15
 
 ### Added
 
