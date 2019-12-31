@@ -1,5 +1,9 @@
 # Aura.Router Integration for Expressive
 
+> ## Repository abandoned 2019-12-31
+>
+> This repository has moved to mezzio/mezzio-aurarouter.
+
 [![Build Status](https://secure.travis-ci.org/zendframework/zend-expressive-aurarouter.svg?branch=master)](https://secure.travis-ci.org/zendframework/zend-expressive-aurarouter)
 [![Coverage Status](https://coveralls.io/repos/github/zendframework/zend-expressive-aurarouter/badge.svg?branch=master)](https://coveralls.io/github/zendframework/zend-expressive-aurarouter?branch=master)
 
